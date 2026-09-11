@@ -1,0 +1,86 @@
+---
+import LocationCard from '../../components/LocationCard.astro';
+import Map from '../../components/Map.astro';
+import PageHero from '../../components/PageHero.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import { home } from '../../copy/home.ts';
+import { hubs } from '../../copy/hubs.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import { entriesIn } from '../../lib/content.ts';
+import {
+    absoluteUrl,
+    homePath,
+    hubPath,
+    locationPath,
+    slugOf,
+} from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+import { localeCodes } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const copy = hubs[locale].locations;
+const strings = t(locale);
+const locations = await entriesIn('locations', locale);
+const path = hubPath(locale, 'locations');
+const alternates = Object.fromEntries(
+    localeCodes.map((code) => [code, hubPath(code, 'locations')]),
+);
+const breadcrumbs = [
+    { name: strings.nav.home, url: absoluteUrl(homePath(locale)) },
+    { name: copy.heading, url: absoluteUrl(path) },
+];
+const towns = locations.map((entry) => ({
+    name: entry.data.name,
+    href: locationPath(locale, slugOf(entry.id)),
+    latitude: entry.data.coordinates.latitude,
+    longitude: entry.data.coordinates.longitude,
+}));
+---
+
+<Layout
+    locale={locale}
+    title={copy.title}
+    description={copy.description}
+    path={path}
+    alternates={alternates}
+    pageType="CollectionPage"
+    breadcrumbs={breadcrumbs}
+>
+    <PageHero
+        locale={locale}
+        heading={copy.heading}
+        lead={copy.intro}
+        breadcrumbs={breadcrumbs}
+    />
+
+    <Section>
+        <div
+            class="grid gap-12 lg:grid-cols-[5fr_7fr] lg:items-start lg:gap-18"
+        >
+            <Map
+                label={home[locale].area.map}
+                base={strings.base.name}
+                towns={towns}
+            />
+            <ul class="grid border-t border-l border-rule sm:grid-cols-2">
+                {
+                    locations.map((entry) => (
+                        <LocationCard locale={locale} entry={entry} />
+                    ))
+                }
+            </ul>
+        </div>
+    </Section>
+
+    <QuoteBand
+        locale={locale}
+        page={path}
+        heading={home[locale].callBand.heading}
+    />
+</Layout>

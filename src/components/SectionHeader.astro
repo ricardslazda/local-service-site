@@ -1,0 +1,42 @@
+---
+interface Props {
+    heading: string;
+    lead?: string;
+    level?: 'h1' | 'h2';
+    tone?: 'light' | 'dark';
+    class?: string;
+}
+
+const {
+    heading,
+    lead,
+    level = 'h2',
+    tone = 'light',
+    class: className,
+} = Astro.props;
+const Heading = level;
+---
+
+<div
+    class:list={[
+        'flex flex-wrap items-end justify-between gap-x-12 gap-y-6',
+        className,
+    ]}
+>
+    <div class="max-w-[60ch]">
+        <Heading class="section-title">{heading}</Heading>
+        {
+            lead && (
+                <p
+                    class:list={[
+                        'section-lead',
+                        tone === 'dark' ? 'text-band-muted' : 'text-ink-2',
+                    ]}
+                >
+                    {lead}
+                </p>
+            )
+        }
+    </div>
+    <slot />
+</div>

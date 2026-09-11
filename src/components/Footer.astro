@@ -1,0 +1,147 @@
+---
+import { t } from '../i18n/strings.ts';
+import { entriesIn } from '../lib/content.ts';
+import {
+    homePath,
+    hubPath,
+    locationPath,
+    servicePath,
+    slugOf,
+    standalonePath,
+} from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+import { site } from '../site.ts';
+
+import Logo from './Logo.astro';
+import PhoneAction from './PhoneAction.astro';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const strings = t(locale);
+const year = new Date().getFullYear();
+const [services, locations] = await Promise.all([
+    entriesIn('services', locale),
+    entriesIn('locations', locale),
+]);
+const columns = [
+    {
+        id: 'footer-services',
+        heading: strings.nav.services,
+        links: services.map((service) => ({
+            href: servicePath(locale, slugOf(service.id)),
+            label: service.data.name,
+        })),
+    },
+    {
+        id: 'footer-locations',
+        heading: strings.nav.locations,
+        links: [
+            { href: homePath(locale), label: strings.base.name },
+            ...locations.map((location) => ({
+                href: locationPath(locale, slugOf(location.id)),
+                label: location.data.name,
+            })),
+        ],
+    },
+];
+const pages = [
+    { href: standalonePath(locale, 'prices'), label: strings.nav.prices },
+    { href: hubPath(locale, 'jobs'), label: strings.nav.jobs },
+    { href: hubPath(locale, 'guides'), label: strings.nav.guides },
+    { href: standalonePath(locale, 'faq'), label: strings.nav.faq },
+    { href: standalonePath(locale, 'reviews'), label: strings.nav.reviews },
+    { href: standalonePath(locale, 'about'), label: strings.nav.about },
+    { href: standalonePath(locale, 'contact'), label: strings.nav.contact },
+    { href: standalonePath(locale, 'privacy'), label: strings.nav.privacy },
+];
+---
+
+<footer class="bg-graphite-950 text-[15px] text-band-muted">
+    <div
+        class="mx-auto grid max-w-page gap-10 px-gutter pt-16 pb-8 md:grid-cols-2 lg:grid-cols-[4fr_2.5fr_2.5fr_2.5fr]"
+    >
+        <div class="flex flex-col items-start gap-5">
+            <Logo locale={locale} tone="light" />
+            <p class="max-w-[34ch]">{strings.tagline}</p>
+            <PhoneAction
+                locale={locale}
+                variant="plain"
+                class="font-display text-[30px] leading-none font-bold text-band-ink hover:text-accent"
+            />
+        </div>
+
+        {
+            columns.map((column) => (
+                <nav aria-labelledby={column.id}>
+                    <h2
+                        id={column.id}
+                        class="text-xs font-semibold tracking-[0.14em] text-band-ink uppercase"
+                    >
+                        {column.heading}
+                    </h2>
+                    <ul class="mt-5 grid gap-2.5">
+                        {column.links.map((link) => (
+                            <li>
+                                <a href={link.href} class="hover:text-band-ink">
+                                    {link.label}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            ))
+        }
+
+        <div>
+            <h2
+                id="footer-contact"
+                class="text-xs font-semibold tracking-[0.14em] text-band-ink uppercase"
+            >
+                {strings.nav.contact}
+            </h2>
+            <address class="mt-5 grid gap-2.5 not-italic">
+                <p>
+                    {site.address.street}, {site.address.locality},
+                    {site.address.postalCode}
+                </p>
+                <p>
+                    <a
+                        href={`mailto:${site.email}`}
+                        class="hover:text-band-ink"
+                    >
+                        {site.email}
+                    </a>
+                </p>
+                <p>{strings.openingHours}</p>
+            </address>
+            <nav aria-labelledby="footer-contact">
+                <ul class="mt-5 grid gap-2.5">
+                    {
+                        pages.map((link) => (
+                            <li>
+                                <a href={link.href} class="hover:text-band-ink">
+                                    {link.label}
+                                </a>
+                            </li>
+                        ))
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="border-t border-white/10">
+        <div
+            class="mx-auto flex max-w-page flex-wrap justify-between gap-x-6 gap-y-2 px-gutter py-5 text-[13px] text-band-muted/80"
+        >
+            <p>© {year} {site.legalName}. {strings.footer.rights}</p>
+            <p>
+                {strings.footer.registration}
+                {site.registrationNumber} · {strings.footer.vat}
+                {site.vatNumber}
+            </p>
+        </div>
+    </div>
+</footer>

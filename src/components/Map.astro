@@ -1,0 +1,97 @@
+---
+import { site } from '../site.ts';
+
+interface Town {
+    name: string;
+    href: string;
+    latitude: number;
+    longitude: number;
+}
+
+interface Props {
+    label: string;
+    base: string;
+    towns: Town[];
+}
+
+const { label, base, towns } = Astro.props;
+const width = 800;
+const height = 600;
+const scale = 8;
+const kmPerLatitude = 111;
+const kmPerLongitude =
+    kmPerLatitude * Math.cos((site.geo.latitude * Math.PI) / 180);
+const offsets = towns.map((town) => ({
+    ...town,
+    x: (town.longitude - site.geo.longitude) * kmPerLongitude,
+    y: (site.geo.latitude - town.latitude) * kmPerLatitude,
+}));
+const xs = [0, ...offsets.map((town) => town.x)];
+const ys = [0, ...offsets.map((town) => town.y)];
+const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
+const centerY = (Math.min(...ys) + Math.max(...ys)) / 2;
+const px = (x: number) => width / 2 + (x - centerX) * scale;
+const py = (y: number) => height / 2 + (y - centerY) * scale;
+const points = offsets.map((town) => ({
+    ...town,
+    cx: px(town.x),
+    cy: py(town.y),
+    anchor: town.x < 0 ? 'end' : 'start',
+    dx: town.x < 0 ? -14 : 14,
+}));
+---
+
+<svg
+    viewBox={`0 0 ${width} ${height}`}
+    role="group"
+    aria-label={label}
+    class="h-auto w-full border border-rule bg-paper texture-hatch font-display"
+>
+    <circle
+        cx={px(0)}
+        cy={py(0)}
+        r={site.serviceRadiusKm * scale}
+        fill="none"
+        class="stroke-accent"
+        stroke-width="1.5"
+        stroke-dasharray="4 6"></circle>
+    <rect
+        x={px(0) - 7}
+        y={py(0) - 7}
+        width="14"
+        height="14"
+        transform={`rotate(45 ${px(0)} ${py(0)})`}
+        class="fill-ink"></rect>
+    <text
+        x={px(0)}
+        y={py(0) - 18}
+        text-anchor="middle"
+        font-size="26"
+        font-weight="800"
+        class="fill-ink uppercase"
+    >
+        {base}
+    </text>
+    {
+        points.map((town) => (
+            <a href={town.href} class="group">
+                <circle
+                    cx={town.cx}
+                    cy={town.cy}
+                    r="7"
+                    class="fill-accent group-hover:fill-accent-hover"
+                />
+                <text
+                    x={town.cx + town.dx}
+                    y={town.cy + 7}
+                    text-anchor={town.anchor}
+                    font-size="22"
+                    font-weight="700"
+                    class="fill-ink uppercase group-hover:fill-accent"
+                >
+                    {town.name}
+                </text>
+            </a>
+        ))
+    }
+</svg>

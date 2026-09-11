@@ -1,0 +1,147 @@
+---
+import Seo from '@jdevalk/astro-seo-graph/Seo.astro';
+import type { BreadcrumbItem } from '@jdevalk/seo-graph-core';
+import { Font } from 'astro:assets';
+
+import CallBar from '../components/CallBar.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import TopBar from '../components/TopBar.astro';
+import { t } from '../i18n/strings.ts';
+import { assertContentOnce, entriesIn } from '../lib/content.ts';
+import { pageGraph } from '../lib/graph.ts';
+import type { ArticleInput, ServiceInput } from '../lib/graph.ts';
+import { absoluteUrl } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+import { defaultLocale, localeCodes, locales, site } from '../site.ts';
+import '../styles/global.css';
+
+interface Props {
+    locale: Locale;
+    title: string;
+    titleSuffix?: boolean;
+    description: string;
+    path: string;
+    alternates: Partial<Record<Locale, string>>;
+    noindex?: boolean;
+    pageType?: 'WebPage' | 'CollectionPage';
+    breadcrumbs?: readonly BreadcrumbItem[];
+    service?: ServiceInput;
+    article?: ArticleInput;
+    datePublished?: Date;
+    dateModified?: Date;
+    quote?: { service?: string; location?: string };
+}
+
+const {
+    locale,
+    title,
+    titleSuffix = true,
+    description,
+    path,
+    alternates,
+    noindex = false,
+    pageType,
+    breadcrumbs,
+    service,
+    article,
+    datePublished,
+    dateModified,
+} = Astro.props;
+
+await assertContentOnce();
+
+const strings = t(locale);
+const canonical = absoluteUrl(path);
+const preload =
+    locale === 'ru'
+        ? [{ subset: 'cyrillic' }, { subset: 'latin' }]
+        : [{ subset: 'latin' }, { subset: 'latin-ext' }];
+const areaServed = [
+    strings.base.name,
+    ...(await entriesIn('locations', locale)).map((entry) => entry.data.name),
+];
+const alternateEntries = localeCodes
+    .filter((code) => alternates[code] !== undefined)
+    .map((code) => ({
+        hreflang: locales[code].hreflang,
+        href: absoluteUrl(alternates[code] ?? '/'),
+    }));
+const graph = pageGraph({
+    locale,
+    url: canonical,
+    title,
+    description,
+    pageType,
+    breadcrumbs,
+    areaServed,
+    service,
+    article,
+    datePublished,
+    dateModified,
+});
+---
+
+<!doctype html>
+<html lang={locales[locale].htmlLang}>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Font
+            cssVariable="--font-fira-sans-extra-condensed"
+            preload={preload}
+        />
+        <Font cssVariable="--font-fira-sans" preload={preload} />
+        <Seo
+            title={title}
+            titleTemplate={titleSuffix ? `%s | ${site.name}` : undefined}
+            description={description}
+            canonical={canonical}
+            noindex={noindex}
+            siteName={site.name}
+            locale={locales[locale].ogLocale}
+            ogType={article ? 'article' : 'website'}
+            ogImage={absoluteUrl(`/og/${locale}.png`)}
+            ogImageAlt={`${site.name}: ${strings.tagline}`}
+            ogImageWidth={1200}
+            ogImageHeight={630}
+            article={article
+                ? {
+                      publishedTime: article.datePublished,
+                      modifiedTime: article.dateModified,
+                  }
+                : undefined}
+            alternates={noindex
+                ? undefined
+                : {
+                      defaultLocale: locales[defaultLocale].hreflang,
+                      entries: alternateEntries,
+                  }}
+            extraLinks={[
+                { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+                { rel: 'icon', href: '/favicon.ico', sizes: '32x32' },
+            ]}
+            graph={graph}
+        />
+    </head>
+    <body
+        class="flex min-h-screen flex-col pb-16 has-[dialog:modal]:overflow-hidden md:pb-0"
+    >
+        <a
+            href="#main"
+            class="sr-only rounded-sm bg-accent-deep px-4 py-2 text-accent-ink focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+        >
+            {strings.skipToContent}
+        </a>
+
+        <TopBar locale={locale} alternates={alternates} />
+        <Header locale={locale} path={path} alternates={alternates} />
+
+        <main id="main" class="flex-1">
+            <slot />
+        </main>
+
+        <Footer locale={locale} />
+        <CallBar locale={locale} />
+    </body>
+</html>

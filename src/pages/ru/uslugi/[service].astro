@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import ServicePage from '../../../components/pages/ServicePage.astro';
+import { entriesIn } from '../../../lib/content.ts';
+import { slugOf } from '../../../lib/paths.ts';
+
+export async function getStaticPaths() {
+    const entries = await entriesIn('services', 'ru');
+
+    return entries.map((entry) => ({
+        params: { service: slugOf(entry.id) },
+        props: { entry },
+    }));
+}
+
+interface Props {
+    entry: CollectionEntry<'services'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<ServicePage locale="ru" entry={entry} />

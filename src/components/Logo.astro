@@ -1,0 +1,25 @@
+---
+import { homePath } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+import { site } from '../site.ts';
+
+interface Props {
+    locale: Locale;
+    tone: 'dark' | 'light';
+    compact?: boolean;
+}
+
+const { locale, tone, compact = false } = Astro.props;
+---
+
+<a
+    href={homePath(locale)}
+    class:list={[
+        'inline-flex items-center gap-3 font-display font-extrabold tracking-[0.02em] whitespace-nowrap uppercase',
+        tone === 'dark' ? 'text-ink' : 'text-band-ink',
+        compact ? 'text-2xl' : 'text-2xl xl:text-[28px]',
+    ]}
+>
+    <span aria-hidden="true" class="size-2.5 bg-accent"></span>
+    <span>{site.name}</span>
+</a>

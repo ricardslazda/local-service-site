@@ -1,0 +1,44 @@
+---
+interface Props {
+    tone?: 'light' | 'paper' | 'band';
+    texture?: 'stripes' | 'grid' | 'hatch';
+    rule?: boolean;
+    padding?: 'default' | 'none';
+    id?: string;
+    class?: string;
+}
+
+const {
+    tone = 'light',
+    texture,
+    rule = false,
+    padding = 'default',
+    id,
+    class: className,
+} = Astro.props;
+const tones = {
+    light: 'bg-concrete',
+    paper: 'bg-paper',
+    band: 'bg-band text-band-ink',
+};
+---
+
+<section
+    id={id}
+    class:list={[
+        tones[tone],
+        texture && `texture-${texture}`,
+        rule && 'border-y border-rule',
+        'overflow-x-clip',
+    ]}
+>
+    <div
+        class:list={[
+            'mx-auto max-w-page px-gutter',
+            padding === 'default' && 'py-14 md:py-16 lg:py-24',
+            className,
+        ]}
+    >
+        <slot />
+    </div>
+</section>

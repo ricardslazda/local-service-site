@@ -1,0 +1,50 @@
+---
+import type { Question } from '../copy/home.ts';
+
+interface Item extends Question {
+    more?: { href: string; label: string };
+}
+
+interface Props {
+    items: Item[];
+    size?: 'md' | 'lg';
+}
+
+const { items, size = 'lg' } = Astro.props;
+---
+
+<div class="border-t border-rule">
+    {
+        items.map((item) => (
+            <details class="group border-b border-rule">
+                <summary
+                    class:list={[
+                        'flex cursor-pointer items-center justify-between gap-6 py-5 font-display leading-[1.1] font-bold text-ink uppercase',
+                        size === 'lg'
+                            ? 'text-[22px] lg:text-[24px]'
+                            : 'text-[22px]',
+                    ]}
+                >
+                    {item.question}
+                    <span
+                        aria-hidden="true"
+                        class="grid size-8 shrink-0 place-items-center bg-accent font-body text-[22px] leading-none font-semibold text-accent-ink"
+                    >
+                        <span class="group-open:hidden">+</span>
+                        <span class="hidden group-open:inline">−</span>
+                    </span>
+                </summary>
+                <div class="pb-6 text-base text-ink-2 lg:pr-16">
+                    <p>{item.answer}</p>
+                    {item.more && (
+                        <p class="mt-3">
+                            <a href={item.more.href} class="link-arrow">
+                                {item.more.label} →
+                            </a>
+                        </p>
+                    )}
+                </div>
+            </details>
+        ))
+    }
+</div>

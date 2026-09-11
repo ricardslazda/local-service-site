@@ -1,0 +1,129 @@
+---
+import { t } from '../i18n/strings.ts';
+import { entriesIn } from '../lib/content.ts';
+import { standalonePath } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+import { site } from '../site.ts';
+
+interface Props {
+    locale: Locale;
+    service?: string;
+    location?: string;
+    page: string;
+}
+
+const { locale, service, location, page } = Astro.props;
+const strings = t(locale).form;
+const services = await entriesIn('services', locale);
+const locations = await entriesIn('locations', locale);
+const label =
+    'grid gap-1.5 text-[13px] font-semibold tracking-[0.06em] text-ink-2 uppercase';
+const field =
+    'min-h-12 w-full rounded-sm border border-field bg-concrete px-3.5 text-base font-normal tracking-normal text-ink normal-case focus:border-ink focus:bg-paper focus:outline-2 focus:outline-offset-1 focus:outline-accent';
+---
+
+<form
+    method="post"
+    action={site.formEndpoint}
+    class="grid gap-5 border-t-4 border-accent bg-paper p-6 text-ink sm:grid-cols-2 lg:p-10"
+>
+    <input type="hidden" name="locale" value={locale} />
+    <input type="hidden" name="page" value={page} />
+    <input
+        type="hidden"
+        name="redirect"
+        value={standalonePath(locale, 'thanks')}
+    />
+    <p class="sr-only" aria-hidden="true">
+        <label for="company">{strings.honeypot}</label>
+        <input
+            id="company"
+            name="company"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+        />
+    </p>
+
+    <label class={label}>
+        {strings.name}
+        <input
+            name="name"
+            type="text"
+            required
+            autocomplete="name"
+            class={field}
+        />
+    </label>
+    <label class={label}>
+        {strings.phone}
+        <input
+            name="phone"
+            type="tel"
+            required
+            autocomplete="tel"
+            class={field}
+        />
+    </label>
+    <label class={label}>
+        {strings.email}
+        <input name="email" type="email" autocomplete="email" class={field} />
+    </label>
+    <label class={label}>
+        {strings.service}
+        <select name="service" class={field}>
+            <option value="" selected={service === undefined}>
+                {strings.choose}
+            </option>
+            {
+                services.map((entry) => (
+                    <option
+                        value={entry.data.translationKey}
+                        selected={entry.data.translationKey === service}
+                    >
+                        {entry.data.name}
+                    </option>
+                ))
+            }
+            <option value="other">{strings.serviceOther}</option>
+        </select>
+    </label>
+    <label class={label}>
+        {strings.location}
+        <select name="location" class={field}>
+            <option value="" selected={location === undefined}>
+                {strings.choose}
+            </option>
+            {
+                locations.map((entry) => (
+                    <option
+                        value={entry.data.translationKey}
+                        selected={entry.data.translationKey === location}
+                    >
+                        {entry.data.name}
+                    </option>
+                ))
+            }
+            <option value="other">{strings.locationOther}</option>
+        </select>
+    </label>
+    <label class:list={[label, 'sm:col-span-2']}>
+        {strings.message}
+        <textarea name="message" rows="4" class:list={[field, 'py-3']}
+        ></textarea>
+    </label>
+    <p class="sm:col-span-2">
+        <button type="submit" class="button button-lg button-primary w-full">
+            {strings.submit}
+        </button>
+    </p>
+    <p class="text-[13px] text-muted sm:col-span-2">
+        {strings.consent}
+        <a
+            href={standalonePath(locale, 'privacy')}
+            class="text-accent-deep underline underline-offset-[3px] hover:text-accent-hover"
+        >
+            {strings.consentLink}
+        </a>.
+    </p>
+</form>

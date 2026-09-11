@@ -1,0 +1,63 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+
+import PageHero from '../../components/PageHero.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import { home } from '../../copy/home.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import { alternatesOf, pageOf } from '../../lib/content.ts';
+import { absoluteUrl, homePath, standalonePath } from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+    kind: CollectionEntry<'pages'>['data']['kind'];
+}
+
+const { locale, kind } = Astro.props;
+const entry = await pageOf(kind, locale);
+const { data } = entry;
+const strings = t(locale);
+const path = standalonePath(locale, kind);
+const { Content } = await render(entry);
+const alternates = await alternatesOf('pages', entry, (code, sibling) =>
+    standalonePath(code, sibling.data.kind),
+);
+const breadcrumbs = [
+    { name: strings.nav.home, url: absoluteUrl(homePath(locale)) },
+    { name: strings.nav[kind], url: absoluteUrl(path) },
+];
+---
+
+<Layout
+    locale={locale}
+    title={data.title}
+    description={data.description}
+    path={path}
+    alternates={alternates}
+    breadcrumbs={breadcrumbs}
+    datePublished={data.pubDate}
+    dateModified={data.updatedDate}
+>
+    <PageHero
+        locale={locale}
+        heading={data.title}
+        lead={data.summary}
+        breadcrumbs={breadcrumbs}
+    />
+
+    <Section>
+        <article class="prose-body">
+            <Content />
+        </article>
+    </Section>
+
+    <QuoteBand
+        locale={locale}
+        page={path}
+        heading={home[locale].callBand.heading}
+    />
+</Layout>

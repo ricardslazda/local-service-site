@@ -1,0 +1,76 @@
+---
+import { render } from 'astro:content';
+
+import PageHero from '../../components/PageHero.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import Testimonials from '../../components/Testimonials.astro';
+import { home } from '../../copy/home.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import { alternatesOf, pageOf, testimonialsFor } from '../../lib/content.ts';
+import { absoluteUrl, homePath, standalonePath } from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+import { site } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const entry = await pageOf('reviews', locale);
+const { data } = entry;
+const strings = t(locale);
+const path = standalonePath(locale, 'reviews');
+const { Content } = await render(entry);
+const alternates = await alternatesOf('pages', entry, (code, sibling) =>
+    standalonePath(code, sibling.data.kind),
+);
+const testimonials = await testimonialsFor();
+const breadcrumbs = [
+    { name: strings.nav.home, url: absoluteUrl(homePath(locale)) },
+    { name: strings.nav.reviews, url: absoluteUrl(path) },
+];
+---
+
+<Layout
+    locale={locale}
+    title={data.title}
+    description={data.description}
+    path={path}
+    alternates={alternates}
+    breadcrumbs={breadcrumbs}
+    datePublished={data.pubDate}
+    dateModified={data.updatedDate}
+>
+    <PageHero
+        locale={locale}
+        heading={data.title}
+        lead={data.summary}
+        breadcrumbs={breadcrumbs}
+    />
+
+    <Section>
+        <div class="grid gap-12 lg:grid-cols-[4fr_8fr] lg:gap-18">
+            <div class="prose-body">
+                <Content />
+                <p class="mt-8">
+                    <a
+                        href={site.mapsUrl}
+                        rel="noopener"
+                        class="button button-outline no-underline"
+                    >
+                        {strings.reviews.leave}
+                    </a>
+                </p>
+            </div>
+            <Testimonials locale={locale} items={testimonials} />
+        </div>
+    </Section>
+
+    <QuoteBand
+        locale={locale}
+        page={path}
+        heading={home[locale].callBand.heading}
+    />
+</Layout>

@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import { locationPath, slugOf } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+
+interface Props {
+    locale: Locale;
+    entry: CollectionEntry<'locations'>;
+}
+
+const { locale, entry } = Astro.props;
+const { name, summary } = entry.data;
+---
+
+<li
+    class="relative flex flex-col gap-2 border-r border-b border-rule bg-paper p-6 transition-colors duration-150 hover:bg-concrete"
+>
+    <h3
+        class="flex items-center justify-between gap-4 font-display text-[26px] leading-none font-bold text-ink uppercase"
+    >
+        <a
+            href={locationPath(locale, slugOf(entry.id))}
+            class="after:absolute after:inset-0 hover:text-accent"
+        >
+            {name}
+        </a>
+        <span aria-hidden="true" class="text-accent">→</span>
+    </h3>
+    <p class="text-sm text-muted">{summary}</p>
+</li>

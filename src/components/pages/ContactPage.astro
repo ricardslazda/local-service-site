@@ -1,0 +1,113 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import PhoneAction from '../../components/PhoneAction.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import { contact } from '../../copy/contact.ts';
+import { home } from '../../copy/home.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import { absoluteUrl, homePath, standalonePath } from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+import { localeCodes, site } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const copy = contact[locale];
+const strings = t(locale);
+const path = standalonePath(locale, 'contact');
+const alternates = Object.fromEntries(
+    localeCodes.map((code) => [code, standalonePath(code, 'contact')]),
+);
+const breadcrumbs = [
+    { name: strings.nav.home, url: absoluteUrl(homePath(locale)) },
+    { name: copy.heading, url: absoluteUrl(path) },
+];
+const address = `${site.address.street}, ${site.address.locality}, ${site.address.postalCode}`;
+const term = 'text-label font-semibold tracking-[0.14em] text-muted uppercase';
+const value = 'mt-1.5 font-display text-[22px] leading-none font-bold text-ink';
+---
+
+<Layout
+    locale={locale}
+    title={copy.title}
+    description={copy.description}
+    path={path}
+    alternates={alternates}
+    breadcrumbs={breadcrumbs}
+>
+    <PageHero
+        locale={locale}
+        heading={copy.heading}
+        lead={copy.intro}
+        breadcrumbs={breadcrumbs}
+    />
+
+    <Section>
+        <div class="grid gap-12 lg:grid-cols-[5fr_7fr] lg:gap-18">
+            <div>
+                <p class="text-lg text-ink-2">{copy.urgent}</p>
+                <div class="mt-6">
+                    <PhoneAction locale={locale} />
+                </div>
+            </div>
+            <dl
+                class="grid gap-6 border border-rule bg-paper p-8 sm:grid-cols-2"
+            >
+                <div>
+                    <dt class={term}>{strings.form.phone}</dt>
+                    <dd class={value}>
+                        <a
+                            href={`tel:${site.phone.e164}`}
+                            class="hover:text-accent"
+                        >
+                            {site.phone.display}
+                        </a>
+                    </dd>
+                </div>
+                <div>
+                    <dt class={term}>{strings.form.emailLabel}</dt>
+                    <dd class={value}>
+                        <a
+                            href={`mailto:${site.email}`}
+                            class="hover:text-accent"
+                        >
+                            {site.email}
+                        </a>
+                    </dd>
+                </div>
+                <div>
+                    <dt class={term}>{copy.findUs}</dt>
+                    <dd class="mt-1.5 text-base text-ink-2">
+                        <span class="font-semibold text-ink"
+                            >{site.legalName}</span
+                        ><br />
+                        {address}<br />
+                        <a
+                            href={site.mapsUrl}
+                            rel="noopener"
+                            class="link-arrow"
+                        >
+                            {copy.map} →
+                        </a>
+                    </dd>
+                </div>
+                <div>
+                    <dt class={term}>{strings.footer.hours}</dt>
+                    <dd class="mt-1.5 text-base text-ink-2">
+                        {strings.openingHours}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </Section>
+
+    <QuoteBand
+        locale={locale}
+        page={path}
+        heading={home[locale].callBand.heading}
+    />
+</Layout>

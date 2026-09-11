@@ -1,0 +1,25 @@
+---
+import { t } from '../i18n/strings.ts';
+import type { Locale } from '../site.ts';
+import { site } from '../site.ts';
+
+interface Props {
+    locale: Locale;
+    variant?: 'solid' | 'outline' | 'text' | 'plain';
+    class?: string;
+}
+
+const { locale, variant = 'solid', class: className = '' } = Astro.props;
+const label = t(locale).cta.call;
+const styles = {
+    solid: 'button button-lg button-primary button-phone',
+    outline: 'button button-lg button-outline-dark button-phone',
+    text: 'items-center font-display text-phone font-bold text-ink hover:text-accent',
+    plain: '',
+}[variant];
+---
+
+<a href={`tel:${site.phone.e164}`} class:list={[styles, className]}>
+    <span class="sr-only">{label}:</span>
+    <span>{site.phone.display}</span>
+</a>

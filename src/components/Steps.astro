@@ -1,0 +1,57 @@
+---
+import type { Step } from '../copy/home.ts';
+
+interface Props {
+    items: Step[];
+    variant: 'band' | 'rows';
+}
+
+const { items, variant } = Astro.props;
+const number = (index: number) => String(index + 1).padStart(2, '0');
+---
+
+{
+    variant === 'band' ? (
+        <ol class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {items.map((item, index) => (
+                <li class="relative border-t border-band-rule pt-6">
+                    <span
+                        aria-hidden="true"
+                        class="absolute -top-px left-0 h-[3px] w-14 bg-accent"
+                    />
+                    <span
+                        aria-hidden="true"
+                        class="block font-display text-[64px] leading-none font-extrabold text-band-rule"
+                    >
+                        {number(index)}
+                    </span>
+                    <h3 class="mt-4 font-display text-[26px] leading-[1.1] font-bold uppercase">
+                        {item.title}
+                    </h3>
+                    <p class="mt-2.5 text-[15px] text-band-muted">
+                        {item.body}
+                    </p>
+                </li>
+            ))}
+        </ol>
+    ) : (
+        <ol>
+            {items.map((item, index) => (
+                <li class="grid grid-cols-[64px_1fr] gap-5 border-b border-rule py-5">
+                    <span
+                        aria-hidden="true"
+                        class="font-display text-[40px] leading-none font-extrabold text-accent"
+                    >
+                        {number(index)}
+                    </span>
+                    <div>
+                        <h3 class="font-display text-heading-sm font-bold text-ink uppercase">
+                            {item.title}
+                        </h3>
+                        <p class="mt-2 text-base text-ink-2">{item.body}</p>
+                    </div>
+                </li>
+            ))}
+        </ol>
+    )
+}

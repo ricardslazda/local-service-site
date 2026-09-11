@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import GuidePage from '../../../components/pages/GuidePage.astro';
+import { guidesIn } from '../../../lib/content.ts';
+import { slugOf } from '../../../lib/paths.ts';
+
+export async function getStaticPaths() {
+    const entries = await guidesIn('ru');
+
+    return entries.map((entry) => ({
+        params: { guide: slugOf(entry.id) },
+        props: { entry },
+    }));
+}
+
+interface Props {
+    entry: CollectionEntry<'guides'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<GuidePage locale="ru" entry={entry} />

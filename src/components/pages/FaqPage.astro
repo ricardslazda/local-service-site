@@ -1,0 +1,113 @@
+---
+import { render } from 'astro:content';
+
+import Faq from '../../components/Faq.astro';
+import PageHero from '../../components/PageHero.astro';
+import PhoneAction from '../../components/PhoneAction.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import { home } from '../../copy/home.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import { alternatesOf, entryByKey, pageOf } from '../../lib/content.ts';
+import {
+    absoluteUrl,
+    guidePath,
+    homePath,
+    servicePath,
+    slugOf,
+    standalonePath,
+} from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const entry = await pageOf('faq', locale);
+const { data } = entry;
+const strings = t(locale);
+const path = standalonePath(locale, 'faq');
+const { Content } = await render(entry);
+const alternates = await alternatesOf('pages', entry, (code, sibling) =>
+    standalonePath(code, sibling.data.kind),
+);
+const breadcrumbs = [
+    { name: strings.nav.home, url: absoluteUrl(homePath(locale)) },
+    { name: strings.nav.faq, url: absoluteUrl(path) },
+];
+
+async function resolve(more: { collection: string; key: string }) {
+    if (more.collection === 'services') {
+        const service = await entryByKey('services', locale, more.key);
+
+        return {
+            href: servicePath(locale, slugOf(service.id)),
+            label: `${strings.faq.more}: ${service.data.name}`,
+        };
+    }
+
+    if (more.collection === 'guides') {
+        const guide = await entryByKey('guides', locale, more.key);
+
+        return {
+            href: guidePath(locale, slugOf(guide.id)),
+            label: `${strings.faq.more}: ${guide.data.title}`,
+        };
+    }
+
+    const page = await entryByKey('pages', locale, more.key);
+
+    return {
+        href: standalonePath(locale, page.data.kind),
+        label: `${strings.faq.more}: ${strings.nav[page.data.kind]}`,
+    };
+}
+
+const items = await Promise.all(
+    (data.questions ?? []).map(async (item) => ({
+        question: item.question,
+        answer: item.answer,
+        more: item.more ? await resolve(item.more) : undefined,
+    })),
+);
+---
+
+<Layout
+    locale={locale}
+    title={data.title}
+    description={data.description}
+    path={path}
+    alternates={alternates}
+    breadcrumbs={breadcrumbs}
+    datePublished={data.pubDate}
+    dateModified={data.updatedDate}
+>
+    <PageHero
+        locale={locale}
+        heading={data.title}
+        lead={data.summary}
+        breadcrumbs={breadcrumbs}
+    />
+
+    <Section>
+        <div class="grid gap-12 lg:grid-cols-[4fr_8fr] lg:gap-18">
+            <div class="prose-body">
+                <Content />
+                <PhoneAction
+                    locale={locale}
+                    variant="plain"
+                    class="mt-6 inline-flex font-display text-[28px] leading-none font-bold text-accent no-underline hover:text-accent-hover"
+                />
+            </div>
+            <Faq items={items} />
+        </div>
+    </Section>
+
+    <QuoteBand
+        locale={locale}
+        page={path}
+        heading={home[locale].callBand.heading}
+    />
+</Layout>
