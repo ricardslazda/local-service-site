@@ -1,0 +1,487 @@
+---
+import type { Urgency, WizardStep } from '../i18n/strings.ts';
+import { t } from '../i18n/strings.ts';
+import { entriesIn } from '../lib/content.ts';
+import { anchorHref, standalonePath } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+import { serviceGroups, site } from '../site.ts';
+
+interface Props {
+    locale: Locale;
+    path: string;
+    quote?: { service?: string; location?: string };
+}
+
+const { locale, path, quote } = Astro.props;
+const strings = t(locale);
+const wizard = strings.wizard;
+const services = await entriesIn('services', locale);
+const locations = await entriesIn('locations', locale);
+const groups = serviceGroups
+    .map((group) => ({
+        heading: strings.services.groups[group],
+        items: services.filter((service) => service.data.group === group),
+    }))
+    .filter((group) => group.items.length > 0);
+const stepKeys: WizardStep[] = ['work', 'details', 'place', 'contact'];
+const urgencies: Urgency[] = ['asap', 'month', 'planning'];
+const stepLabel = (index: number) =>
+    `${wizard.step} ${index + 1} ${wizard.of} ${stepKeys.length}`;
+const summary = [
+    { answer: 'service', term: wizard.steps.work },
+    { answer: 'urgency', term: wizard.urgency },
+    { answer: 'location', term: wizard.place },
+    { answer: 'message', term: wizard.message },
+];
+const label =
+    'grid gap-1.5 text-[13px] font-semibold tracking-[0.06em] text-ink-2 uppercase';
+const field =
+    'min-h-12 w-full rounded-sm border border-field bg-concrete px-3.5 text-base font-normal tracking-normal text-ink normal-case focus:border-ink focus:bg-paper focus:outline-2 focus:outline-offset-1 focus:outline-accent';
+const card =
+    'flex min-h-12 cursor-pointer items-center gap-3 rounded-sm border border-rule bg-concrete px-4 text-sm font-semibold tracking-[0.04em] text-ink uppercase has-checked:border-accent-deep has-checked:bg-paper has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent';
+const radio = 'size-4 shrink-0 accent-accent-deep';
+const step = 'grid gap-5 px-6 py-6 lg:px-8';
+const legend = 'grid gap-1 pt-6 focus:outline-none';
+const counter =
+    'text-label font-semibold tracking-[0.14em] text-muted uppercase';
+const question = 'font-display text-heading-sm font-bold text-ink uppercase';
+const groupHeading =
+    'text-label font-semibold tracking-[0.14em] text-muted uppercase';
+---
+
+<dialog
+    data-wizard
+    data-opener={anchorHref('quote')}
+    aria-labelledby="wizard-title"
+    aria-describedby="wizard-lead"
+    class="m-auto max-h-[calc(100dvh_-_2rem)] w-[min(100%_-_2rem,44rem)] overflow-auto rounded-sm border-0 bg-paper p-0 text-ink backdrop:bg-graphite-950/70 max-sm:h-dvh max-sm:max-h-none max-sm:w-full max-sm:max-w-none"
+>
+    <form method="post" action={site.formEndpoint} class="grid">
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="page" value={path} />
+        <input
+            type="hidden"
+            name="redirect"
+            value={standalonePath(locale, 'thanks')}
+        />
+        <input type="hidden" name="source" value="wizard" />
+        <p class="sr-only" aria-hidden="true">
+            <label for="wizard-company">{strings.form.honeypot}</label>
+            <input
+                id="wizard-company"
+                name="company"
+                type="text"
+                tabindex="-1"
+                autocomplete="off"
+            />
+        </p>
+
+        <header
+            class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-rule bg-paper px-6 pt-6 pb-4 lg:px-8"
+        >
+            <div>
+                <h2
+                    id="wizard-title"
+                    class="font-display text-heading font-bold text-ink uppercase"
+                >
+                    {wizard.title}
+                </h2>
+                <p
+                    id="wizard-lead"
+                    class="mt-1 max-w-[52ch] text-sm text-ink-2"
+                >
+                    {wizard.lead}
+                </p>
+            </div>
+            <button
+                type="button"
+                data-close
+                aria-label={strings.close}
+                class="flex size-11 shrink-0 items-center justify-center rounded-sm text-ink hover:bg-paper-2"
+            >
+                <svg
+                    viewBox="0 0 20 20"
+                    width="22"
+                    height="22"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M4 4l12 12M16 4L4 16"
+                        stroke="currentColor"
+                        stroke-width="2"></path>
+                </svg>
+            </button>
+        </header>
+
+        <ol
+            aria-label={wizard.progress}
+            class="grid auto-cols-fr grid-flow-col gap-1 px-6 pt-5 lg:px-8"
+        >
+            {
+                stepKeys.map((key, index) => (
+                    <li
+                        data-step-mark
+                        aria-current={index === 0 ? 'step' : undefined}
+                        class="group grid gap-2"
+                    >
+                        <span
+                            aria-hidden="true"
+                            class="h-1 bg-rule-2 group-aria-[current=step]:bg-accent"
+                        />
+                        <span
+                            class={`${counter} group-aria-[current=step]:text-ink max-sm:sr-only`}
+                        >
+                            {wizard.steps[key]}
+                        </span>
+                    </li>
+                ))
+            }
+        </ol>
+
+        <fieldset data-step class={step}>
+            <legend tabindex="-1" class={legend}>
+                <span class={counter}>{stepLabel(0)}</span>
+                <span class={question}>{wizard.questions.work}</span>
+            </legend>
+            {
+                groups.map((group) => (
+                    <div class="grid gap-2">
+                        <h3 class={groupHeading}>{group.heading}</h3>
+                        <div class="grid gap-2 sm:grid-cols-2">
+                            {group.items.map((service) => (
+                                <label class={card}>
+                                    <input
+                                        type="radio"
+                                        name="service"
+                                        value={service.data.translationKey}
+                                        checked={
+                                            service.data.translationKey ===
+                                            quote?.service
+                                        }
+                                        class={radio}
+                                    />
+                                    {service.data.name}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                ))
+            }
+            <label class={card}>
+                <input
+                    type="radio"
+                    name="service"
+                    value="other"
+                    class={radio}
+                />
+                {strings.form.serviceOther}
+            </label>
+        </fieldset>
+
+        <fieldset data-step hidden class={step}>
+            <legend tabindex="-1" class={legend}>
+                <span class={counter}>{stepLabel(1)}</span>
+                <span class={question}>{wizard.questions.details}</span>
+            </legend>
+            <fieldset class="grid gap-2">
+                <legend class={label}>{wizard.urgency}</legend>
+                <div class="grid gap-2 sm:grid-cols-3">
+                    {
+                        urgencies.map((key) => (
+                            <label class={card}>
+                                <input
+                                    type="radio"
+                                    name="urgency"
+                                    value={key}
+                                    class={radio}
+                                />
+                                {wizard.urgencies[key]}
+                            </label>
+                        ))
+                    }
+                </div>
+            </fieldset>
+            <label class={label}>
+                {strings.form.message}
+                <textarea name="message" rows="4" class:list={[field, 'py-3']}
+                ></textarea>
+            </label>
+        </fieldset>
+
+        <fieldset data-step hidden class={step}>
+            <legend tabindex="-1" class={legend}>
+                <span class={counter}>{stepLabel(2)}</span>
+                <span class={question}>{wizard.questions.place}</span>
+            </legend>
+            <div class="grid gap-2 sm:grid-cols-3">
+                <label class={card}>
+                    <input
+                        type="radio"
+                        name="location"
+                        value="riga"
+                        class={radio}
+                    />
+                    {strings.base.name}
+                </label>
+                {
+                    locations.map((location) => (
+                        <label class={card}>
+                            <input
+                                type="radio"
+                                name="location"
+                                value={location.data.translationKey}
+                                checked={
+                                    location.data.translationKey ===
+                                    quote?.location
+                                }
+                                class={radio}
+                            />
+                            {location.data.name}
+                        </label>
+                    ))
+                }
+                <label class={card}>
+                    <input
+                        type="radio"
+                        name="location"
+                        value="other"
+                        class={radio}
+                    />
+                    {strings.form.locationOther}
+                </label>
+            </div>
+            <label class={label}>
+                {wizard.address}
+                <input
+                    name="address"
+                    type="text"
+                    autocomplete="street-address"
+                    class={field}
+                />
+            </label>
+        </fieldset>
+
+        <fieldset data-step hidden class={step}>
+            <legend tabindex="-1" class={legend}>
+                <span class={counter}>{stepLabel(3)}</span>
+                <span class={question}>{wizard.questions.contact}</span>
+            </legend>
+            <dl
+                class="grid gap-x-6 gap-y-1 border-y border-rule py-4 text-sm sm:grid-cols-[auto_1fr]"
+            >
+                {
+                    summary.map((item) => (
+                        <>
+                            <dt class={counter}>{item.term}</dt>
+                            <dd
+                                data-answer={item.answer}
+                                data-empty={wizard.unanswered}
+                                class="text-ink"
+                            />
+                        </>
+                    ))
+                }
+            </dl>
+            <p class="text-sm text-ink-2">{wizard.contactLead}</p>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <label class={label}>
+                    {strings.form.name}
+                    <input
+                        name="name"
+                        type="text"
+                        required
+                        autocomplete="name"
+                        class={field}
+                    />
+                </label>
+                <label class={label}>
+                    {strings.form.phone}
+                    <input
+                        name="phone"
+                        type="tel"
+                        required
+                        autocomplete="tel"
+                        class={field}
+                    />
+                </label>
+                <label class={label}>
+                    {strings.form.email}
+                    <input
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        class={field}
+                    />
+                </label>
+            </div>
+            <p class="text-[13px] text-muted">
+                {strings.form.consent}
+                <a
+                    href={standalonePath(locale, 'privacy')}
+                    class="text-accent-deep underline underline-offset-[3px] hover:text-accent-hover"
+                >
+                    {strings.form.consentLink}
+                </a>.
+            </p>
+        </fieldset>
+
+        <footer
+            class="sticky bottom-0 flex items-center justify-between gap-3 border-t border-rule bg-paper px-6 py-4 lg:px-8"
+        >
+            <button
+                type="button"
+                data-back
+                hidden
+                class="button button-outline"
+            >
+                {wizard.back}
+            </button>
+            <button
+                type="button"
+                data-next
+                class="button button-primary ml-auto"
+            >
+                {wizard.next}
+            </button>
+            <button
+                type="submit"
+                data-submit
+                hidden
+                class="button button-lg button-primary ml-auto"
+            >
+                {strings.form.submit}
+            </button>
+        </footer>
+    </form>
+</dialog>
+
+<script>
+    const dialog = document.querySelector<HTMLDialogElement>(
+        'dialog[data-wizard]',
+    );
+
+    if (dialog && typeof dialog.showModal === 'function') {
+        const form = dialog.querySelector('form') as HTMLFormElement;
+        const steps = [
+            ...form.querySelectorAll<HTMLFieldSetElement>(
+                'fieldset[data-step]',
+            ),
+        ];
+        const marks = [
+            ...form.querySelectorAll<HTMLElement>('[data-step-mark]'),
+        ];
+        const back = form.querySelector('[data-back]') as HTMLButtonElement;
+        const next = form.querySelector('[data-next]') as HTMLButtonElement;
+        const submit = form.querySelector('[data-submit]') as HTMLButtonElement;
+        const answers = [
+            ...form.querySelectorAll<HTMLElement>('[data-answer]'),
+        ];
+        const opener = `a[href$="${dialog.dataset.opener}"]`;
+        let current = 0;
+
+        const checked = (name: string) =>
+            form.querySelector<HTMLInputElement>(
+                `input[name="${name}"]:checked`,
+            );
+        const labelOf = (input: HTMLInputElement | null) =>
+            input?.closest('label')?.textContent?.trim() ?? '';
+
+        const summarise = () => {
+            for (const cell of answers) {
+                const name = cell.dataset.answer ?? '';
+                const field = form.elements.namedItem(name);
+                const value =
+                    field instanceof HTMLTextAreaElement
+                        ? field.value.trim()
+                        : labelOf(checked(name));
+
+                cell.textContent = value || (cell.dataset.empty ?? '');
+            }
+        };
+
+        const show = (index: number) => {
+            const last = index === steps.length - 1;
+
+            current = index;
+
+            for (const [position, step] of steps.entries()) {
+                step.hidden = position !== index;
+            }
+
+            for (const [position, mark] of marks.entries()) {
+                if (position === index) {
+                    mark.setAttribute('aria-current', 'step');
+                } else {
+                    mark.removeAttribute('aria-current');
+                }
+            }
+
+            back.hidden = index === 0;
+            next.hidden = last;
+            submit.hidden = !last;
+
+            if (last) {
+                summarise();
+            }
+
+            dialog.scrollTop = 0;
+            steps[index]
+                ?.querySelector<HTMLElement>('legend')
+                ?.focus({ preventScroll: true });
+        };
+
+        const open = () => {
+            const menu = document.getElementById('site-menu');
+
+            if (menu?.matches(':popover-open')) {
+                menu.hidePopover();
+            }
+
+            dialog.showModal();
+            show(current);
+        };
+
+        document.addEventListener('click', (event) => {
+            const link =
+                event.target instanceof Element
+                    ? event.target.closest(opener)
+                    : null;
+
+            if (link) {
+                event.preventDefault();
+                open();
+            }
+        });
+
+        back.addEventListener('click', () => show(current - 1));
+        next.addEventListener('click', () => show(current + 1));
+        dialog
+            .querySelector('[data-close]')
+            ?.addEventListener('click', () => dialog.close());
+
+        form.addEventListener('keydown', (event) => {
+            if (
+                event.key === 'Enter' &&
+                event.target instanceof HTMLInputElement &&
+                current < steps.length - 1
+            ) {
+                event.preventDefault();
+                show(current + 1);
+            }
+        });
+
+        form.addEventListener(
+            'invalid',
+            (event) => {
+                const index = steps.findIndex((step) =>
+                    step.contains(event.target as Node),
+                );
+
+                if (index >= 0 && index !== current) {
+                    show(index);
+                }
+            },
+            true,
+        );
+    }
+</script>
