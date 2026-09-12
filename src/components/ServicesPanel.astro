@@ -1,0 +1,84 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import { t } from '../i18n/strings.ts';
+import { hubPath, servicePath, slugOf } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+import { serviceGroups } from '../site.ts';
+
+interface Props {
+    locale: Locale;
+    services: CollectionEntry<'services'>[];
+    label: string;
+    current: boolean;
+}
+
+const { locale, services, label, current } = Astro.props;
+const strings = t(locale);
+const groups = serviceGroups
+    .map((group) => ({
+        heading: strings.services.groups[group],
+        items: services.filter((service) => service.data.group === group),
+    }))
+    .filter((group) => group.items.length > 0);
+---
+
+<details data-panel class="group/panel">
+    <summary
+        class:list={[
+            'flex cursor-pointer items-center gap-1 py-1 hover:text-accent-deep',
+            current &&
+                'text-accent-deep shadow-[inset_0_-2px_0_0_var(--color-accent)]',
+        ]}
+    >
+        {label}
+        <svg
+            viewBox="0 0 16 16"
+            width="14"
+            height="14"
+            aria-hidden="true"
+            class="transition-transform duration-150 group-open/panel:rotate-180"
+        >
+            <path
+                d="M3 5l5 5 5-5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"></path>
+        </svg>
+    </summary>
+    <div class="absolute inset-x-0 top-full z-20 border-b border-rule bg-paper">
+        <div
+            class="mx-auto grid max-w-page auto-cols-fr grid-flow-col gap-10 px-gutter py-10"
+        >
+            {
+                groups.map(({ heading, items }) => (
+                    <div>
+                        <h2 class="text-label font-semibold tracking-[0.14em] text-muted uppercase">
+                            {heading}
+                        </h2>
+                        <ul class="mt-4 grid gap-2.5">
+                            {items.map((service) => (
+                                <li>
+                                    <a
+                                        href={servicePath(
+                                            locale,
+                                            slugOf(service.id),
+                                        )}
+                                        class="font-display text-[22px] leading-none font-bold text-ink uppercase hover:text-accent"
+                                    >
+                                        {service.data.name}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))
+            }
+        </div>
+        <div class="mx-auto max-w-page px-gutter pb-8">
+            <a href={hubPath(locale, 'services')} class="link-arrow">
+                {strings.services.all} →
+            </a>
+        </div>
+    </div>
+</details>

@@ -1,0 +1,80 @@
+---
+import { t } from '../i18n/strings.ts';
+import { anchors } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+import { site } from '../site.ts';
+
+import QuoteForm from './QuoteForm.astro';
+import Section from './Section.astro';
+
+interface Props {
+    locale: Locale;
+    page: string;
+    heading: string;
+    lead?: string;
+    service?: string;
+    location?: string;
+}
+
+const {
+    locale,
+    page,
+    heading,
+    lead = t(locale).form.intro,
+    service,
+    location,
+} = Astro.props;
+const strings = t(locale);
+const term =
+    'text-xs font-semibold tracking-[0.12em] text-band-muted uppercase';
+---
+
+<Section tone="band" texture="stripes" id={anchors.quote}>
+    <div class="grid gap-12 lg:grid-cols-[5fr_7fr] lg:gap-20">
+        <div>
+            <h2
+                class="font-display text-[40px] leading-[0.98] font-bold uppercase lg:text-[56px]"
+            >
+                {heading}
+            </h2>
+            <p class="mt-5 max-w-[44ch] text-[17px] text-band-lead">{lead}</p>
+            <dl
+                class="mt-8 grid gap-6 border-t border-band-rule pt-6"
+                id={anchors.contact}
+            >
+                <div>
+                    <dt class={term}>{strings.form.phone}</dt>
+                    <dd class="mt-1.5">
+                        <a
+                            href={`tel:${site.phone.e164}`}
+                            class="font-display text-[34px] leading-none font-bold hover:text-accent"
+                        >
+                            {site.phone.display}
+                        </a>
+                    </dd>
+                </div>
+                <div>
+                    <dt class={term}>{strings.form.emailLabel}</dt>
+                    <dd class="mt-1.5 text-lg">
+                        <a
+                            href={`mailto:${site.email}`}
+                            class="hover:text-accent"
+                        >
+                            {site.email}
+                        </a>
+                    </dd>
+                </div>
+                <div>
+                    <dt class={term}>{strings.footer.hours}</dt>
+                    <dd class="mt-1.5 text-lg">{strings.openingHours}</dd>
+                </div>
+            </dl>
+        </div>
+        <QuoteForm
+            locale={locale}
+            page={page}
+            service={service}
+            location={location}
+        />
+    </div>
+</Section>

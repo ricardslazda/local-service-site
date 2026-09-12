@@ -1,0 +1,297 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Chips from '../../components/Chips.astro';
+import Faq from '../../components/Faq.astro';
+import JobCard from '../../components/JobCard.astro';
+import PhoneAction from '../../components/PhoneAction.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import Testimonials from '../../components/Testimonials.astro';
+import { home } from '../../copy/home.ts';
+import { hubs } from '../../copy/hubs.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import {
+    alternatesOf,
+    entriesIn,
+    entryByKey,
+    jobsFor,
+    testimonialsFor,
+} from '../../lib/content.ts';
+import {
+    absoluteUrl,
+    anchorHref,
+    homePath,
+    hubPath,
+    locationPath,
+    servicePath,
+    slugOf,
+    townSectionPath,
+} from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+    entry: CollectionEntry<'locations'>;
+}
+
+const { locale, entry } = Astro.props;
+const { data } = entry;
+const strings = t(locale);
+const slug = slugOf(entry.id);
+const path = locationPath(locale, slug);
+const url = absoluteUrl(path);
+const { Content } = await render(entry);
+const alternates = await alternatesOf('locations', entry, (code, sibling) =>
+    locationPath(code, slugOf(sibling.id)),
+);
+const services = await entriesIn('services', locale);
+const testimonials = await testimonialsFor({
+    location: data.translationKey,
+});
+const jobs = await jobsFor(locale, { location: data.translationKey });
+const sections = await Promise.all(
+    data.sections.map(async (section) => {
+        const service = await entryByKey('services', locale, section.service);
+        const serviceSlug = slugOf(service.id);
+
+        return {
+            ...section,
+            id: serviceSlug,
+            anchor: townSectionPath(locale, slug, serviceSlug),
+            name: service.data.name,
+            href: servicePath(locale, serviceSlug),
+            paragraphs: section.body.split(/\n\s*\n/),
+        };
+    }),
+);
+const breadcrumbs = [
+    { name: strings.nav.home, url: absoluteUrl(homePath(locale)) },
+    {
+        name: hubs[locale].locations.heading,
+        url: absoluteUrl(hubPath(locale, 'locations')),
+    },
+    { name: data.name, url },
+];
+const facts = [
+    {
+        label: strings.locations.distance,
+        value: `${data.distanceKm} ${strings.locations.km}`,
+    },
+    {
+        label: strings.locations.travelTime,
+        value: `${data.travelMinutes} ${strings.locations.minutes}`,
+    },
+];
+const factTerm =
+    'text-[13px] font-semibold tracking-[0.1em] text-band-muted uppercase';
+const sectionHeading =
+    'font-display text-[28px] leading-none font-bold text-ink uppercase lg:text-[36px]';
+---
+
+<Layout
+    locale={locale}
+    quote={{ location: data.translationKey }}
+    title={data.title}
+    description={data.description}
+    path={path}
+    alternates={alternates}
+    breadcrumbs={breadcrumbs}
+    datePublished={data.pubDate}
+    dateModified={data.updatedDate}
+>
+    <Section tone="band" texture="stripes" class="pt-8 pb-14 lg:pt-8 lg:pb-20">
+        <Breadcrumbs locale={locale} items={breadcrumbs} class="mb-12" />
+        <div class="grid gap-10 lg:grid-cols-[8fr_4fr] lg:items-end lg:gap-18">
+            <div>
+                <h1
+                    class="max-w-[16ch] font-display text-[48px] leading-[0.95] font-extrabold uppercase lg:text-[clamp(48px,5.4vw,80px)]"
+                >
+                    {data.title}
+                </h1>
+                <p
+                    class="mt-6 max-w-[58ch] text-[17px] leading-normal text-band-lead lg:text-[19px]"
+                >
+                    {data.summary}
+                </p>
+                <div class="mt-8">
+                    <PhoneAction locale={locale} variant="outline" />
+                </div>
+            </div>
+            <dl class="grid">
+                {
+                    facts.map((fact) => (
+                        <div class="flex flex-wrap items-baseline justify-between gap-4 border-b border-band-rule py-3.5">
+                            <dt class={factTerm}>{fact.label}</dt>
+                            <dd class="font-display text-[22px] leading-none font-bold">
+                                {fact.value}
+                            </dd>
+                        </div>
+                    ))
+                }
+            </dl>
+        </div>
+    </Section>
+
+    <div class="border-b border-rule bg-paper-2 texture-hatch">
+        <ul class="mx-auto grid max-w-page border-l border-rule md:grid-cols-3">
+            {
+                data.facts.map((fact) => (
+                    <li class="flex items-start gap-3 border-r border-rule px-5 py-6 text-[15px] text-ink-2 lg:px-7 lg:py-8">
+                        <span
+                            aria-hidden="true"
+                            class="mt-2 size-2 shrink-0 bg-accent"
+                        />
+                        {fact}
+                    </li>
+                ))
+            }
+        </ul>
+    </div>
+
+    <Section>
+        <article class="grid gap-14 lg:grid-cols-[7fr_4fr] lg:gap-24">
+            <div class="grid gap-14">
+                <div class="prose-body max-w-none">
+                    <Content />
+                </div>
+
+                <div>
+                    <h2 class={sectionHeading}>
+                        {strings.locations.servicesIn}
+                        {data.inPlace}
+                    </h2>
+                    <Chips
+                        items={sections.map((section) => ({
+                            href: section.anchor,
+                            label: section.name,
+                        }))}
+                        class="mt-6"
+                    />
+                </div>
+
+                {
+                    sections.map((section) => (
+                        <section
+                            id={section.id}
+                            class="border-t border-rule pt-10"
+                        >
+                            <h2 class={sectionHeading}>{section.heading}</h2>
+                            <div class="mt-5 grid gap-4 text-[17px] text-ink-2">
+                                {section.paragraphs.map((paragraph) => (
+                                    <p>{paragraph}</p>
+                                ))}
+                            </div>
+                            <p class="mt-5">
+                                <a href={section.href} class="link-arrow">
+                                    {strings.locations.more}: {section.name} →
+                                </a>
+                            </p>
+                        </section>
+                    ))
+                }
+            </div>
+
+            <aside
+                class="grid content-start gap-4 self-start lg:sticky lg:top-26"
+            >
+                <div class="bg-band texture-grid p-8 text-band-ink">
+                    <p
+                        class="text-[13px] font-semibold tracking-[0.14em] text-band-muted uppercase"
+                    >
+                        {strings.services.asideLabel}
+                    </p>
+                    <p
+                        class="mt-3 font-display text-[30px] leading-none font-bold uppercase"
+                    >
+                        {strings.services.asideHeading}
+                    </p>
+                    <div class="mt-6 grid gap-3">
+                        <PhoneAction locale={locale} class="w-full" />
+                        <a
+                            href={anchorHref('quote')}
+                            class="button button-outline-dark min-h-12 w-full"
+                        >
+                            {strings.cta.requestQuote}
+                        </a>
+                    </div>
+                    <p class="mt-4 text-[13px] text-band-muted">
+                        {strings.openingHours}
+                    </p>
+                </div>
+            </aside>
+        </article>
+    </Section>
+
+    {
+        jobs.length > 0 && (
+            <Section tone="paper" rule>
+                <SectionHeader
+                    heading={`${strings.jobs.done} ${data.inPlace}`}
+                />
+                <ul class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {jobs.map((job) => (
+                        <JobCard locale={locale} entry={job} />
+                    ))}
+                </ul>
+            </Section>
+        )
+    }
+
+    {
+        testimonials.length > 0 && (
+            <Section>
+                <SectionHeader
+                    heading={`${strings.locations.testimonialsIn} ${data.inPlace}`}
+                />
+                <div class="mt-10">
+                    <Testimonials locale={locale} items={testimonials} />
+                </div>
+            </Section>
+        )
+    }
+
+    <Section tone="paper" rule>
+        <SectionHeader heading={`${strings.services.all}: ${data.inPlace}`} />
+        <ul
+            class="mt-10 grid border-t border-l border-rule md:grid-cols-2 lg:grid-cols-3"
+        >
+            {
+                services.map((service, index) => (
+                    <ServiceCard
+                        locale={locale}
+                        entry={service}
+                        number={index + 1}
+                    />
+                ))
+            }
+        </ul>
+    </Section>
+
+    {
+        data.questions.length > 0 && (
+            <Section>
+                <div class="max-w-prose">
+                    <SectionHeader
+                        heading={`${strings.locations.questionsIn} ${data.inPlace}`}
+                    />
+                    <div class="mt-8">
+                        <Faq items={data.questions} size="md" />
+                    </div>
+                </div>
+            </Section>
+        )
+    }
+
+    <QuoteBand
+        locale={locale}
+        page={path}
+        heading={home[locale].callBand.heading}
+        location={data.translationKey}
+    />
+</Layout>

@@ -1,0 +1,39 @@
+---
+import type { BreadcrumbItem } from '@jdevalk/seo-graph-core';
+
+import type { Locale } from '../site.ts';
+
+import Breadcrumbs from './Breadcrumbs.astro';
+import Section from './Section.astro';
+
+interface Props {
+    locale: Locale;
+    heading: string;
+    lead?: string;
+    breadcrumbs?: readonly BreadcrumbItem[];
+}
+
+const { locale, heading, lead, breadcrumbs } = Astro.props;
+---
+
+<Section tone="band" texture="stripes" class="pt-8 pb-14 lg:pt-8 lg:pb-20">
+    {
+        breadcrumbs && (
+            <Breadcrumbs locale={locale} items={breadcrumbs} class="mb-12" />
+        )
+    }
+    <slot name="above" />
+    <h1
+        class="max-w-[18ch] font-display text-[44px] leading-[0.95] font-extrabold uppercase lg:text-[clamp(48px,5.4vw,72px)]"
+    >
+        {heading}
+    </h1>
+    {
+        lead && (
+            <p class="mt-6 max-w-[58ch] text-[17px] leading-normal text-band-lead lg:text-[19px]">
+                {lead}
+            </p>
+        )
+    }
+    <slot />
+</Section>

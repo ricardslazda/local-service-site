@@ -1,0 +1,41 @@
+---
+import type { BreadcrumbItem } from '@jdevalk/seo-graph-core';
+
+import { t } from '../i18n/strings.ts';
+import type { Locale } from '../site.ts';
+import { site } from '../site.ts';
+
+interface Props {
+    locale: Locale;
+    items: readonly BreadcrumbItem[];
+    tone?: 'light' | 'dark';
+    class?: string;
+}
+
+const { locale, items, tone = 'dark', class: className } = Astro.props;
+const relative = (url: string) => url.replace(site.origin, '') || '/';
+const muted = tone === 'dark' ? 'text-band-muted' : 'text-muted';
+const current = tone === 'dark' ? 'text-band-ink' : 'text-ink';
+const hover = tone === 'dark' ? 'hover:text-band-ink' : 'hover:text-ink';
+---
+
+<nav aria-label={t(locale).breadcrumbs} class={className}>
+    <ol class:list={['flex flex-wrap gap-x-2.5 gap-y-1 text-[13px]', muted]}>
+        {
+            items.map((item, index) => (
+                <li class="flex items-center gap-2.5">
+                    {index > 0 && <span aria-hidden="true">/</span>}
+                    {index < items.length - 1 ? (
+                        <a href={relative(item.url)} class={hover}>
+                            {item.name}
+                        </a>
+                    ) : (
+                        <span aria-current="page" class={current}>
+                            {item.name}
+                        </span>
+                    )}
+                </li>
+            ))
+        }
+    </ol>
+</nav>

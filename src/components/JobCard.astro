@@ -1,0 +1,62 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import { t } from '../i18n/strings.ts';
+import { entryByKey } from '../lib/content.ts';
+import { jobPath, slugOf } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+
+import Photo from './Photo.astro';
+
+interface Props {
+    locale: Locale;
+    entry: CollectionEntry<'jobs'>;
+}
+
+const { locale, entry } = Astro.props;
+const { data } = entry;
+const strings = t(locale);
+const place = data.location
+    ? (await entryByKey('locations', locale, data.location)).data.name
+    : strings.base.name;
+---
+
+<li
+    class="relative flex flex-col border border-rule bg-paper transition-colors duration-150 hover:bg-concrete"
+>
+    <div class="relative">
+        <Photo
+            src={data.photos.after}
+            alt={data.photoAlt.after}
+            widths={[480, 800]}
+            sizes="(min-width: 64rem) 25rem, 100vw"
+            class="aspect-[4/3]"
+        />
+        <span
+            class="absolute top-3 left-3 bg-ink px-2 py-1.5 text-[11px] font-semibold tracking-[0.08em] text-band-ink uppercase"
+        >
+            {place}
+        </span>
+    </div>
+    <div class="flex flex-1 flex-col gap-2 p-6">
+        <p
+            class="font-display text-sm font-semibold tracking-[0.08em] text-accent-deep uppercase"
+        >
+            {data.year} · {data.duration}
+        </p>
+        <h3 class="font-display text-heading-sm font-bold text-ink uppercase">
+            <a
+                href={jobPath(locale, slugOf(entry.id))}
+                class="after:absolute after:inset-0 hover:text-accent"
+            >
+                {data.title}
+            </a>
+        </h3>
+        <p class="text-sm text-muted">
+            {data.facts.map((fact) => fact.value).join(' · ')}
+        </p>
+        <p class="mt-auto pt-2 font-display text-base font-bold text-ink">
+            {strings.jobs.price}: {data.priceBand}
+        </p>
+    </div>
+</li>

@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import LocationPage from '../../components/pages/LocationPage.astro';
+import { entriesIn } from '../../lib/content.ts';
+import { slugOf } from '../../lib/paths.ts';
+
+export async function getStaticPaths() {
+    const entries = await entriesIn('locations', 'lv');
+
+    return entries.map((entry) => ({
+        params: { location: slugOf(entry.id) },
+        props: { entry },
+    }));
+}
+
+interface Props {
+    entry: CollectionEntry<'locations'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<LocationPage locale="lv" entry={entry} />

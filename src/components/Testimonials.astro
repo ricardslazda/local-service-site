@@ -1,0 +1,18 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import type { Locale } from '../site.ts';
+
+import TestimonialCard from './TestimonialCard.astro';
+
+interface Props {
+    locale: Locale;
+    items: CollectionEntry<'testimonials'>[];
+}
+
+const { locale, items } = Astro.props;
+---
+
+<ul class="grid gap-6 lg:grid-cols-2">
+    {items.map((entry) => <TestimonialCard locale={locale} entry={entry} />)}
+</ul>

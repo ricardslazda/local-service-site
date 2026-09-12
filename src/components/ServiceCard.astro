@@ -1,0 +1,55 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import { t } from '../i18n/strings.ts';
+import { servicePath, slugOf } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+
+import PriceFrom from './PriceFrom.astro';
+
+interface Props {
+    locale: Locale;
+    entry: CollectionEntry<'services'>;
+    number: number;
+}
+
+const { locale, entry, number } = Astro.props;
+const { name, summary, priceFrom } = entry.data;
+const strings = t(locale);
+const href = servicePath(locale, slugOf(entry.id));
+---
+
+<li
+    class="relative flex min-h-[300px] flex-col gap-3.5 border-r border-b border-rule bg-paper p-7 transition-colors duration-150 hover:bg-concrete lg:px-7 lg:pt-8"
+>
+    <span
+        aria-hidden="true"
+        class="font-display text-[44px] leading-none font-extrabold text-accent"
+    >
+        {String(number).padStart(2, '0')}
+    </span>
+    <h3 class="font-display text-heading font-bold text-ink uppercase">
+        <a href={href} class="after:absolute after:inset-0 hover:text-accent">
+            {name}
+        </a>
+    </h3>
+    <p class="flex-1 text-[15px] text-ink-2">{summary}</p>
+    <div
+        class="flex flex-wrap items-baseline justify-between gap-3 border-t border-rule-2 pt-4"
+    >
+        {
+            priceFrom ? (
+                <PriceFrom
+                    locale={locale}
+                    amount={priceFrom.amount}
+                    unit={priceFrom.unit}
+                />
+            ) : (
+                <p class="font-display text-[24px] leading-none font-bold text-ink">
+                    {strings.services.onRequest}
+                </p>
+            )
+        }
+        <span class="link-arrow">{strings.services.more} →</span>
+    </div>
+</li>

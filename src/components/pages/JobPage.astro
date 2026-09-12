@@ -1,0 +1,178 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Photo from '../../components/Photo.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import { hubs } from '../../copy/hubs.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import { alternatesOf, entryByKey } from '../../lib/content.ts';
+import {
+    absoluteUrl,
+    homePath,
+    hubPath,
+    jobPath,
+    locationPath,
+    servicePath,
+    slugOf,
+} from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+    entry: CollectionEntry<'jobs'>;
+}
+
+const { locale, entry } = Astro.props;
+const { data } = entry;
+const strings = t(locale);
+const path = jobPath(locale, slugOf(entry.id));
+const url = absoluteUrl(path);
+const { Content } = await render(entry);
+const alternates = await alternatesOf('jobs', entry, (code, sibling) =>
+    jobPath(code, slugOf(sibling.id)),
+);
+const service = await entryByKey('services', locale, data.service);
+const place = data.location
+    ? await entryByKey('locations', locale, data.location)
+    : undefined;
+const breadcrumbs = [
+    { name: strings.nav.home, url: absoluteUrl(homePath(locale)) },
+    {
+        name: hubs[locale].jobs.heading,
+        url: absoluteUrl(hubPath(locale, 'jobs')),
+    },
+    { name: data.title, url },
+];
+const facts = [
+    ...data.facts,
+    { label: strings.jobs.duration, value: data.duration },
+    { label: strings.jobs.price, value: data.priceBand },
+    { label: strings.jobs.year, value: String(data.year) },
+];
+const factTerm =
+    'text-[13px] font-semibold tracking-[0.1em] text-band-muted uppercase';
+const photos = [
+    {
+        label: strings.jobs.before,
+        src: data.photos.before,
+        alt: data.photoAlt.before,
+    },
+    {
+        label: strings.jobs.after,
+        src: data.photos.after,
+        alt: data.photoAlt.after,
+    },
+];
+const related = [
+    {
+        label: strings.jobs.service,
+        href: servicePath(locale, slugOf(service.id)),
+        name: service.data.name,
+    },
+    {
+        label: strings.jobs.town,
+        href: place ? locationPath(locale, slugOf(place.id)) : homePath(locale),
+        name: place ? place.data.name : strings.base.name,
+    },
+];
+---
+
+<Layout
+    locale={locale}
+    title={data.title}
+    description={data.description}
+    path={path}
+    alternates={alternates}
+    breadcrumbs={breadcrumbs}
+    datePublished={data.pubDate}
+    dateModified={data.updatedDate}
+>
+    <Section tone="band" texture="stripes" class="pt-8 pb-14 lg:pt-8 lg:pb-20">
+        <Breadcrumbs locale={locale} items={breadcrumbs} class="mb-12" />
+        <div class="grid gap-10 lg:grid-cols-[8fr_4fr] lg:items-end lg:gap-18">
+            <div>
+                <h1
+                    class="max-w-[18ch] font-display text-[44px] leading-[0.95] font-extrabold uppercase lg:text-[clamp(48px,5.4vw,72px)]"
+                >
+                    {data.title}
+                </h1>
+                <p
+                    class="mt-6 max-w-[58ch] text-[17px] leading-normal text-band-lead lg:text-[19px]"
+                >
+                    {data.summary}
+                </p>
+            </div>
+            <dl class="grid">
+                {
+                    facts.map((fact) => (
+                        <div class="flex flex-wrap items-baseline justify-between gap-4 border-b border-band-rule py-3.5">
+                            <dt class={factTerm}>{fact.label}</dt>
+                            <dd class="font-display text-[22px] leading-none font-bold">
+                                {fact.value}
+                            </dd>
+                        </div>
+                    ))
+                }
+            </dl>
+        </div>
+    </Section>
+
+    <Section>
+        <article>
+            <ul class="grid gap-6 md:grid-cols-2">
+                {
+                    photos.map((photo) => (
+                        <li class="relative">
+                            <Photo
+                                src={photo.src}
+                                alt={photo.alt}
+                                widths={[600, 1200]}
+                                sizes="(min-width: 64rem) 38rem, 100vw"
+                                class="aspect-[4/3] border-8 border-paper"
+                            />
+                            <span class="absolute top-5 left-5 bg-ink px-2 py-1.5 text-[11px] font-semibold tracking-[0.08em] text-band-ink uppercase">
+                                {photo.label}
+                            </span>
+                        </li>
+                    ))
+                }
+            </ul>
+            <div class="prose-body mt-12">
+                <Content />
+            </div>
+            <dl
+                class="mt-12 grid max-w-prose gap-px border border-rule bg-rule sm:grid-cols-2"
+            >
+                {
+                    related.map((item) => (
+                        <div class="bg-paper p-6">
+                            <dt class="text-label font-semibold tracking-[0.14em] text-muted uppercase">
+                                {item.label}
+                            </dt>
+                            <dd class="mt-2">
+                                <a
+                                    href={item.href}
+                                    class="font-display text-[22px] leading-none font-bold text-ink uppercase hover:text-accent"
+                                >
+                                    {item.name} →
+                                </a>
+                            </dd>
+                        </div>
+                    ))
+                }
+            </dl>
+        </article>
+    </Section>
+
+    <QuoteBand
+        locale={locale}
+        page={path}
+        heading={service.data.quoteHeading}
+        service={data.service}
+        location={data.location}
+    />
+</Layout>

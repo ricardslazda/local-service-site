@@ -1,0 +1,45 @@
+---
+import { homePath } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+import { localeCodes, locales } from '../site.ts';
+
+interface Props {
+    locale: Locale;
+    alternates: Partial<Record<Locale, string>>;
+    class?: string;
+}
+
+const { locale, alternates, class: className } = Astro.props;
+---
+
+<ul
+    class:list={[
+        'flex items-center gap-3 text-[13px] font-semibold tracking-[0.06em] uppercase',
+        className,
+    ]}
+>
+    {
+        localeCodes.map((code) =>
+            code === locale ? (
+                <li>
+                    <span aria-current="page" class="text-band-ink">
+                        {code.toUpperCase()}
+                        <span class="sr-only">{locales[code].name}</span>
+                    </span>
+                </li>
+            ) : (
+                <li>
+                    <a
+                        href={alternates[code] ?? homePath(code)}
+                        hreflang={locales[code].hreflang}
+                        lang={locales[code].htmlLang}
+                        class="text-band-muted hover:text-band-ink"
+                    >
+                        {code.toUpperCase()}
+                        <span class="sr-only">{locales[code].name}</span>
+                    </a>
+                </li>
+            ),
+        )
+    }
+</ul>

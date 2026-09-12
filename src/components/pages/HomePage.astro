@@ -1,0 +1,271 @@
+---
+import heroPhoto from '../../assets/placeholders/hero.svg';
+import whyLarge from '../../assets/placeholders/why-large.svg';
+import whySmall from '../../assets/placeholders/why-small.svg';
+import Faq from '../../components/Faq.astro';
+import LocationCard from '../../components/LocationCard.astro';
+import Map from '../../components/Map.astro';
+import PhoneAction from '../../components/PhoneAction.astro';
+import Photo from '../../components/Photo.astro';
+import GuideCard from '../../components/GuideCard.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import StatsBand from '../../components/StatsBand.astro';
+import Steps from '../../components/Steps.astro';
+import Testimonials from '../../components/Testimonials.astro';
+import TrustStrip from '../../components/TrustStrip.astro';
+import { home } from '../../copy/home.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import { entriesIn, guidesIn, testimonialsFor } from '../../lib/content.ts';
+import {
+    anchorHref,
+    homePath,
+    hubPath,
+    locationPath,
+    slugOf,
+} from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const copy = home[locale];
+const strings = t(locale);
+const path = homePath(locale);
+const services = await entriesIn('services', locale);
+const locations = await entriesIn('locations', locale);
+const guides = (await guidesIn(locale)).slice(0, 3);
+const testimonials = (await testimonialsFor()).slice(0, 4);
+const [headingBefore, headingAccent, headingAfter] = copy.hero.heading;
+const towns = locations.map((entry) => ({
+    name: entry.data.name,
+    href: locationPath(locale, slugOf(entry.id)),
+    latitude: entry.data.coordinates.latitude,
+    longitude: entry.data.coordinates.longitude,
+}));
+---
+
+<Layout
+    locale={locale}
+    title={copy.title}
+    description={copy.description}
+    path={path}
+    alternates={{ lv: homePath('lv'), ru: homePath('ru') }}
+>
+    <Section tone="band" texture="stripes" class="py-14 lg:pt-24 lg:pb-22">
+        <div
+            class="grid gap-14 lg:grid-cols-[7fr_5fr] lg:items-center lg:gap-18"
+        >
+            <div>
+                <h1
+                    class="max-w-[14ch] font-display text-[52px] leading-[0.95] font-extrabold uppercase lg:text-display-xl"
+                >
+                    {headingBefore}
+                    <span class="text-accent">{headingAccent}</span>
+                    {headingAfter}
+                </h1>
+                <p
+                    class="mt-7 max-w-[56ch] text-[17px] leading-normal text-band-lead lg:text-[19px]"
+                >
+                    {copy.hero.lead}
+                </p>
+                <div class="mt-9 flex flex-wrap gap-3">
+                    <a
+                        href={anchorHref('quote')}
+                        class="button button-lg button-primary"
+                    >
+                        {copy.hero.primary}
+                    </a>
+                    <PhoneAction locale={locale} variant="outline" />
+                </div>
+                <TrustStrip items={copy.trust} tone="dark" class="mt-11" />
+            </div>
+            <div class="relative mb-10 lg:mb-0 lg:pr-6">
+                <span
+                    aria-hidden="true"
+                    class="pointer-events-none absolute top-6 -right-6 -bottom-6 left-6 hidden border border-accent/60 lg:block"
+                ></span>
+                <Photo
+                    src={heroPhoto}
+                    alt={copy.hero.photoAlt}
+                    widths={[600, 1200]}
+                    sizes="(min-width: 64rem) 30rem, 100vw"
+                    class="relative aspect-[4/3] lg:aspect-[4/5]"
+                />
+                <div
+                    class="absolute bottom-[-40px] left-4 border-l-4 border-accent bg-paper px-6 py-5 text-ink lg:bottom-10 lg:left-[-40px]"
+                >
+                    <span
+                        class="block font-display text-[52px] leading-none font-extrabold"
+                    >
+                        {copy.hero.badge.value}
+                    </span>
+                    <span
+                        class="mt-1 block max-w-[14ch] text-sm font-semibold tracking-[0.06em] text-ink-2 uppercase"
+                    >
+                        {copy.hero.badge.label}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </Section>
+
+    <StatsBand items={copy.stats} />
+
+    <Section>
+        <SectionHeader
+            heading={copy.services.heading}
+            lead={copy.services.lead}
+        />
+        <ul
+            class="mt-10 grid border-t border-l border-rule md:grid-cols-2 lg:grid-cols-3"
+        >
+            {
+                services.map((entry, index) => (
+                    <ServiceCard
+                        locale={locale}
+                        entry={entry}
+                        number={index + 1}
+                    />
+                ))
+            }
+        </ul>
+        <p class="mt-8">
+            <a href={hubPath(locale, 'services')} class="link-arrow">
+                {strings.services.all} →
+            </a>
+        </p>
+    </Section>
+
+    <Section tone="paper" rule>
+        <div class="grid gap-14 lg:grid-cols-2 lg:items-center lg:gap-20">
+            <div class="relative min-h-[300px] lg:min-h-[480px]">
+                <Photo
+                    src={whyLarge}
+                    alt={copy.whyUs.photoLargeAlt}
+                    widths={[600, 1200]}
+                    sizes="(min-width: 64rem) 34rem, 100vw"
+                    class="absolute inset-0 h-full pr-12 pb-12 lg:pr-12 lg:pb-12"
+                />
+                <Photo
+                    src={whySmall}
+                    alt={copy.whyUs.photoSmallAlt}
+                    widths={[400, 800]}
+                    sizes="(min-width: 64rem) 20rem, 60vw"
+                    class="absolute right-0 bottom-0 aspect-[4/3] w-[58%] border-8 border-paper"
+                />
+            </div>
+            <div>
+                <SectionHeader
+                    heading={copy.whyUs.heading}
+                    lead={copy.whyUs.lead}
+                />
+                <ol class="mt-10 grid gap-7">
+                    {
+                        copy.whyUs.reasons.map((reason, index) => (
+                            <li class="grid grid-cols-[52px_1fr] gap-5">
+                                <span
+                                    aria-hidden="true"
+                                    class="border-t-[3px] border-accent pt-1 font-display text-[30px] leading-none font-extrabold text-accent"
+                                >
+                                    {String(index + 1).padStart(2, '0')}
+                                </span>
+                                <div>
+                                    <h3 class="font-display text-heading-sm font-bold text-ink uppercase">
+                                        {reason.title}
+                                    </h3>
+                                    <p class="mt-1.5 text-[15px] text-ink-2">
+                                        {reason.body}
+                                    </p>
+                                </div>
+                            </li>
+                        ))
+                    }
+                </ol>
+            </div>
+        </div>
+    </Section>
+
+    <Section tone="band" texture="grid">
+        <div class="flex flex-wrap items-end justify-between gap-x-12 gap-y-4">
+            <h2 class="section-title">{copy.steps.heading}</h2>
+            <p class="max-w-[44ch] text-base text-band-muted">
+                {copy.steps.lead}
+            </p>
+        </div>
+        <div class="mt-12">
+            <Steps items={copy.steps.items} variant="band" />
+        </div>
+    </Section>
+
+    <Section>
+        <SectionHeader
+            heading={copy.testimonials.heading}
+            lead={copy.testimonials.lead}
+        />
+        <div class="mt-10">
+            <Testimonials locale={locale} items={testimonials} />
+        </div>
+    </Section>
+
+    <Section tone="paper" rule>
+        <div class="grid gap-12 lg:grid-cols-[5fr_7fr] lg:gap-18">
+            <div>
+                <SectionHeader
+                    heading={copy.area.heading}
+                    lead={copy.area.lead}
+                />
+                <div class="mt-8">
+                    <Map
+                        label={copy.area.map}
+                        base={strings.base.name}
+                        towns={towns}
+                    />
+                </div>
+            </div>
+            <ul class="grid border-t border-l border-rule sm:grid-cols-2">
+                {
+                    locations.map((entry) => (
+                        <LocationCard locale={locale} entry={entry} />
+                    ))
+                }
+            </ul>
+        </div>
+    </Section>
+
+    <Section>
+        <SectionHeader heading={copy.guides.heading} lead={copy.guides.lead}>
+            <a
+                href={hubPath(locale, 'guides')}
+                class="button button-outline min-h-12"
+            >
+                {strings.guides.all}
+            </a>
+        </SectionHeader>
+        <ul class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {guides.map((entry) => <GuideCard locale={locale} entry={entry} />)}
+        </ul>
+    </Section>
+
+    <Section tone="paper" rule>
+        <div class="grid gap-12 lg:grid-cols-[4fr_8fr] lg:gap-18">
+            <div>
+                <SectionHeader heading={copy.faq.heading} />
+                <p class="mt-6 text-base text-ink-2">{copy.faq.note}</p>
+                <PhoneAction
+                    locale={locale}
+                    variant="plain"
+                    class="mt-4 inline-flex font-display text-[28px] leading-none font-bold text-accent hover:text-accent-hover"
+                />
+            </div>
+            <Faq items={copy.faq.items} />
+        </div>
+    </Section>
+
+    <QuoteBand locale={locale} page={path} heading={copy.callBand.heading} />
+</Layout>

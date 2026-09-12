@@ -1,0 +1,75 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import { t } from '../i18n/strings.ts';
+import { entryByKey } from '../lib/content.ts';
+import { formatMonth, isoDate } from '../lib/format.ts';
+import { jobPath, slugOf } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+
+import Photo from './Photo.astro';
+
+interface Props {
+    locale: Locale;
+    entry: CollectionEntry<'testimonials'>;
+}
+
+const { locale, entry } = Astro.props;
+const { data } = entry;
+const job = data.job ? await entryByKey('jobs', locale, data.job) : undefined;
+---
+
+<li class="grid border border-rule bg-paper md:grid-cols-[2fr_3fr]">
+    <div class="relative min-h-45 md:min-h-60">
+        <Photo
+            src={data.photo}
+            alt={data.photoAlt[locale]}
+            widths={[400, 800]}
+            sizes="(min-width: 64rem) 16rem, 100vw"
+            class="absolute inset-0 h-full"
+        />
+        <span
+            class="absolute top-3 left-3 bg-ink px-2 py-1.5 text-[11px] font-semibold tracking-[0.08em] text-band-ink uppercase"
+        >
+            {data.work[locale]}
+        </span>
+    </div>
+    <figure class="flex flex-col gap-3 p-7">
+        <span
+            aria-hidden="true"
+            class="font-display text-number leading-[0.6] font-extrabold text-accent"
+        >
+            “
+        </span>
+        <blockquote class="flex-1 text-base text-ink-2">
+            <p>{data.quote[locale]}</p>
+        </blockquote>
+        {
+            job && (
+                <p>
+                    <a
+                        href={jobPath(locale, slugOf(job.id))}
+                        class="link-arrow"
+                    >
+                        {t(locale).jobs.view} →
+                    </a>
+                </p>
+            )
+        }
+        <figcaption
+            class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-rule-2 pt-3.5 text-sm text-muted"
+        >
+            <span>
+                <strong class="font-semibold text-ink">{data.name}</strong> · {
+                    data.place[locale]
+                }
+            </span>
+            <time
+                datetime={isoDate(data.date).slice(0, 7)}
+                class="font-display text-[15px] font-semibold text-ink"
+            >
+                {formatMonth(data.date, locale)}
+            </time>
+        </figcaption>
+    </figure>
+</li>

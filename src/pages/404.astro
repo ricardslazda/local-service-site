@@ -1,0 +1,74 @@
+---
+import Section from '../components/Section.astro';
+import { notFound } from '../copy/not-found.ts';
+import Layout from '../layouts/Layout.astro';
+import { homePath, hubPath, standalonePath } from '../lib/paths.ts';
+import { defaultLocale, localeCodes, locales } from '../site.ts';
+
+const copy = notFound[defaultLocale];
+---
+
+<Layout
+    locale={defaultLocale}
+    title={copy.title}
+    description={copy.body}
+    path="/404"
+    alternates={{ [defaultLocale]: '/404' }}
+    noindex
+>
+    <Section tone="band" texture="stripes" class="py-16 lg:py-24">
+        <h1
+            class="max-w-[24ch] font-display text-[44px] leading-[0.95] font-extrabold uppercase lg:text-[clamp(48px,5.4vw,72px)]"
+        >
+            {
+                localeCodes.map((code, index) => (
+                    <>
+                        {index > 0 && <span aria-hidden="true"> / </span>}
+                        <span lang={locales[code].htmlLang}>
+                            {notFound[code].heading}
+                        </span>
+                    </>
+                ))
+            }
+        </h1>
+    </Section>
+    <Section>
+        <div class="grid gap-12 lg:grid-cols-2 lg:gap-18">
+            {
+                localeCodes.map((code) => (
+                    <div lang={locales[code].htmlLang}>
+                        <p class="max-w-prose text-lg text-ink-2">
+                            {notFound[code].body}
+                        </p>
+                        <ul class="mt-6 flex flex-wrap gap-3">
+                            <li>
+                                <a
+                                    href={homePath(code)}
+                                    class="button button-primary"
+                                >
+                                    {notFound[code].home}
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href={hubPath(code, 'services')}
+                                    class="button button-outline"
+                                >
+                                    {notFound[code].services}
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href={standalonePath(code, 'contact')}
+                                    class="button button-outline"
+                                >
+                                    {notFound[code].contact}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                ))
+            }
+        </div>
+    </Section>
+</Layout>

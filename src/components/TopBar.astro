@@ -1,0 +1,38 @@
+---
+import { t } from '../i18n/strings.ts';
+import type { Locale } from '../site.ts';
+import { site } from '../site.ts';
+
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+    locale: Locale;
+    alternates: Partial<Record<Locale, string>>;
+}
+
+const { locale, alternates } = Astro.props;
+const strings = t(locale);
+---
+
+<div class="bg-graphite-950 text-[13px] text-band-muted">
+    <div
+        class="mx-auto flex min-h-10 max-w-page items-center justify-between gap-6 px-gutter"
+    >
+        <p class="hidden items-center gap-4 lg:flex">
+            <span>{site.address.street}, {site.address.locality}</span>
+            <span aria-hidden="true" class="h-3 border-l border-band-rule/70"
+            ></span>
+            <span>{strings.openingHours}</span>
+        </p>
+        <div class="flex items-center gap-4">
+            <a href={`mailto:${site.email}`} class="hover:text-band-ink">
+                {site.email}
+            </a>
+            <span aria-hidden="true" class="h-3 border-l border-band-rule/70"
+            ></span>
+            <nav aria-label={strings.language}>
+                <LanguageSwitcher locale={locale} alternates={alternates} />
+            </nav>
+        </div>
+    </div>
+</div>

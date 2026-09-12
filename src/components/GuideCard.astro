@@ -1,0 +1,55 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import { t } from '../i18n/strings.ts';
+import { formatDate, isoDate } from '../lib/format.ts';
+import { guidePath, slugOf } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+
+import Photo from './Photo.astro';
+
+interface Props {
+    locale: Locale;
+    entry: CollectionEntry<'guides'>;
+}
+
+const { locale, entry } = Astro.props;
+const { title, description, image, imageAlt, pubDate, updatedDate } =
+    entry.data;
+const shown = updatedDate ?? pubDate;
+---
+
+<li
+    class="relative flex flex-col border border-rule bg-paper transition-colors duration-150 hover:bg-concrete"
+>
+    <Photo
+        src={image}
+        alt={imageAlt}
+        widths={[480, 800]}
+        sizes="(min-width: 64rem) 25rem, 100vw"
+        class="aspect-video"
+    />
+    <div class="flex flex-1 flex-col gap-2 p-6">
+        <p
+            class="font-display text-sm font-semibold tracking-[0.08em] text-accent-deep uppercase"
+        >
+            <span class="sr-only">
+                {
+                    updatedDate
+                        ? t(locale).guides.updated
+                        : t(locale).guides.published
+                }:
+            </span>
+            <time datetime={isoDate(shown)}>{formatDate(shown, locale)}</time>
+        </p>
+        <h3 class="font-display text-heading-sm font-bold text-ink uppercase">
+            <a
+                href={guidePath(locale, slugOf(entry.id))}
+                class="after:absolute after:inset-0 hover:text-accent"
+            >
+                {title}
+            </a>
+        </h3>
+        <p class="text-sm text-muted">{description}</p>
+    </div>
+</li>

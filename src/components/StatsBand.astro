@@ -1,0 +1,26 @@
+---
+interface Props {
+    items: { value: string; label: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="border-b border-rule bg-paper-2 texture-hatch">
+    <dl
+        class="mx-auto grid max-w-page grid-cols-2 border-l border-rule lg:grid-cols-4"
+    >
+        {
+            items.map((item) => (
+                <div class="border-r border-rule px-5 py-6 lg:px-7 lg:py-9">
+                    <dd class="font-display text-[40px] leading-none font-extrabold text-ink lg:text-number">
+                        {item.value}
+                    </dd>
+                    <dt class="mt-2.5 text-sm font-semibold tracking-[0.08em] text-muted uppercase">
+                        {item.label}
+                    </dt>
+                </div>
+            ))
+        }
+    </dl>
+</div>

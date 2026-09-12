@@ -1,0 +1,133 @@
+---
+import { t } from '../i18n/strings.ts';
+import { entriesIn } from '../lib/content.ts';
+import { anchorHref, hubPath, standalonePath } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+
+import Logo from './Logo.astro';
+import MobileMenu from './MobileMenu.astro';
+import PhoneAction from './PhoneAction.astro';
+import ServicesPanel from './ServicesPanel.astro';
+
+interface Props {
+    locale: Locale;
+    path: string;
+    alternates: Partial<Record<Locale, string>>;
+}
+
+const { locale, path, alternates } = Astro.props;
+const strings = t(locale);
+const services = await entriesIn('services', locale);
+const links = [
+    { href: hubPath(locale, 'services'), label: strings.nav.services },
+    { href: standalonePath(locale, 'prices'), label: strings.nav.prices },
+    { href: hubPath(locale, 'jobs'), label: strings.nav.jobs },
+    { href: hubPath(locale, 'locations'), label: strings.nav.locations },
+    { href: hubPath(locale, 'guides'), label: strings.nav.guides },
+    { href: standalonePath(locale, 'about'), label: strings.nav.about },
+];
+const isCurrent = (href: string) =>
+    path === href || path.startsWith(`${href}/`);
+---
+
+<header class="sticky top-0 z-20 border-b border-rule bg-paper">
+    <div
+        class="relative mx-auto flex min-h-16 max-w-page items-center gap-3 px-gutter py-1 xl:min-h-20 xl:gap-5"
+    >
+        <Logo locale={locale} tone="dark" />
+
+        <nav aria-label={strings.menu} class="hidden flex-1 xl:block">
+            <ul
+                class="flex items-center gap-5 text-[14px] font-semibold tracking-[0.04em] whitespace-nowrap uppercase"
+            >
+                {
+                    links.map((link) =>
+                        link.href === hubPath(locale, 'services') ? (
+                            <li>
+                                <ServicesPanel
+                                    locale={locale}
+                                    services={services}
+                                    label={link.label}
+                                    current={isCurrent(link.href)}
+                                />
+                            </li>
+                        ) : (
+                            <li>
+                                <a
+                                    href={link.href}
+                                    aria-current={
+                                        isCurrent(link.href)
+                                            ? 'page'
+                                            : undefined
+                                    }
+                                    class:list={[
+                                        'py-1 hover:text-accent-deep',
+                                        isCurrent(link.href) &&
+                                            'text-accent-deep shadow-[inset_0_-2px_0_0_var(--color-accent)]',
+                                    ]}
+                                >
+                                    {link.label}
+                                </a>
+                            </li>
+                        ),
+                    )
+                }
+            </ul>
+        </nav>
+
+        <div class="ml-auto flex items-center gap-3 xl:gap-5">
+            <PhoneAction
+                locale={locale}
+                variant="text"
+                class="hidden md:inline-flex"
+            />
+            <a
+                href={anchorHref('quote')}
+                class="button button-primary hidden xl:inline-flex"
+            >
+                {strings.cta.requestQuote}
+            </a>
+            <button
+                type="button"
+                popovertarget="site-menu"
+                aria-label={strings.menu}
+                class="flex size-11 items-center justify-center rounded-sm text-ink hover:bg-paper-2 xl:hidden"
+            >
+                <svg
+                    viewBox="0 0 20 16"
+                    width="20"
+                    height="16"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M0 1h20M0 8h20M0 15h20"
+                        stroke="currentColor"
+                        stroke-width="2"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <MobileMenu locale={locale} alternates={alternates} links={links} />
+</header>
+
+<script>
+    const panels = document.querySelectorAll<HTMLDetailsElement>(
+        'details[data-panel]',
+    );
+
+    document.addEventListener('click', (event) => {
+        for (const panel of panels) {
+            if (panel.open && !panel.contains(event.target as Node)) {
+                panel.open = false;
+            }
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            for (const panel of panels) {
+                panel.open = false;
+            }
+        }
+    });
+</script>

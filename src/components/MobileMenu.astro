@@ -1,0 +1,74 @@
+---
+import { t } from '../i18n/strings.ts';
+import { anchorHref } from '../lib/paths.ts';
+import type { Locale } from '../site.ts';
+
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import Logo from './Logo.astro';
+import PhoneAction from './PhoneAction.astro';
+
+interface Props {
+    locale: Locale;
+    alternates: Partial<Record<Locale, string>>;
+    links: { href: string; label: string }[];
+}
+
+const { locale, alternates, links } = Astro.props;
+const strings = t(locale);
+---
+
+<div
+    id="site-menu"
+    popover
+    class="fixed inset-0 m-0 h-auto max-h-none w-auto max-w-none flex-col overflow-auto border-0 bg-band p-0 text-band-ink open:flex"
+>
+    <div class="flex items-center justify-between px-gutter py-4">
+        <Logo locale={locale} tone="light" compact />
+        <button
+            type="button"
+            popovertarget="site-menu"
+            popovertargetaction="hide"
+            autofocus
+            aria-label={strings.close}
+            class="flex size-11 items-center justify-center rounded-sm hover:bg-white/6"
+        >
+            <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true">
+                <path
+                    d="M4 4l12 12M16 4L4 16"
+                    stroke="currentColor"
+                    stroke-width="2"></path>
+            </svg>
+        </button>
+    </div>
+    <nav aria-label={strings.menu} class="px-gutter">
+        <ul class="grid">
+            {
+                links.map((link) => (
+                    <li class="border-b border-band-rule">
+                        <a
+                            href={link.href}
+                            class="block py-4 font-display text-[32px] leading-none font-bold uppercase hover:text-accent"
+                        >
+                            {link.label}
+                        </a>
+                    </li>
+                ))
+            }
+        </ul>
+    </nav>
+    <div class="mt-auto grid gap-3 px-gutter py-6">
+        <PhoneAction locale={locale} class="w-full" />
+        <a
+            href={anchorHref('quote')}
+            class="button button-lg button-outline-dark w-full"
+        >
+            {strings.cta.requestQuote}
+        </a>
+        <div
+            class="flex flex-wrap items-center justify-between gap-3 pt-2 text-[13px] text-band-muted"
+        >
+            <span>{strings.openingHours}</span>
+            <LanguageSwitcher locale={locale} alternates={alternates} />
+        </div>
+    </div>
+</div>

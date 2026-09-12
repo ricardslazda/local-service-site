@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+import JobPage from '../../../components/pages/JobPage.astro';
+import { jobsIn } from '../../../lib/content.ts';
+import { slugOf } from '../../../lib/paths.ts';
+
+export async function getStaticPaths() {
+    const entries = await jobsIn('ru');
+
+    return entries.map((entry) => ({
+        params: { job: slugOf(entry.id) },
+        props: { entry },
+    }));
+}
+
+interface Props {
+    entry: CollectionEntry<'jobs'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<JobPage locale="ru" entry={entry} />

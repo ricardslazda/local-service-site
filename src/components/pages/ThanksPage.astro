@@ -1,0 +1,41 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import PhoneAction from '../../components/PhoneAction.astro';
+import Section from '../../components/Section.astro';
+import { thanks } from '../../copy/contact.ts';
+import Layout from '../../layouts/Layout.astro';
+import { homePath, standalonePath } from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+import { localeCodes } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const copy = thanks[locale];
+const alternates = Object.fromEntries(
+    localeCodes.map((code) => [code, standalonePath(code, 'thanks')]),
+);
+---
+
+<Layout
+    locale={locale}
+    title={copy.title}
+    description={copy.description}
+    path={standalonePath(locale, 'thanks')}
+    alternates={alternates}
+    noindex
+>
+    <PageHero locale={locale} heading={copy.heading} lead={copy.body} />
+
+    <Section>
+        <p class="max-w-prose text-lg text-ink-2">{copy.urgent}</p>
+        <div class="mt-6">
+            <PhoneAction locale={locale} />
+        </div>
+        <p class="mt-10">
+            <a href={homePath(locale)} class="link-arrow">{copy.backHome} →</a>
+        </p>
+    </Section>
+</Layout>

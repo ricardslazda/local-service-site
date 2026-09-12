@@ -1,0 +1,92 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import QuoteBand from '../../components/QuoteBand.astro';
+import Section from '../../components/Section.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import Steps from '../../components/Steps.astro';
+import { home } from '../../copy/home.ts';
+import { hubs } from '../../copy/hubs.ts';
+import { t } from '../../i18n/strings.ts';
+import Layout from '../../layouts/Layout.astro';
+import { entriesIn } from '../../lib/content.ts';
+import { absoluteUrl, homePath, hubPath } from '../../lib/paths.ts';
+import type { Locale } from '../../site.ts';
+import { localeCodes } from '../../site.ts';
+
+interface Props {
+    locale: Locale;
+}
+
+const { locale } = Astro.props;
+const copy = hubs[locale].services;
+const services = await entriesIn('services', locale);
+const path = hubPath(locale, 'services');
+const alternates = Object.fromEntries(
+    localeCodes.map((code) => [code, hubPath(code, 'services')]),
+);
+const breadcrumbs = [
+    { name: t(locale).nav.home, url: absoluteUrl(homePath(locale)) },
+    { name: copy.heading, url: absoluteUrl(path) },
+];
+---
+
+<Layout
+    locale={locale}
+    title={copy.title}
+    description={copy.description}
+    path={path}
+    alternates={alternates}
+    pageType="CollectionPage"
+    breadcrumbs={breadcrumbs}
+>
+    <PageHero
+        locale={locale}
+        heading={copy.heading}
+        lead={copy.intro}
+        breadcrumbs={breadcrumbs}
+    />
+
+    <Section>
+        <ul
+            class="grid border-t border-l border-rule md:grid-cols-2 lg:grid-cols-3"
+        >
+            {
+                services.map((entry, index) => (
+                    <ServiceCard
+                        locale={locale}
+                        entry={entry}
+                        number={index + 1}
+                    />
+                ))
+            }
+        </ul>
+    </Section>
+
+    <Section tone="band" texture="grid">
+        <div class="flex flex-wrap items-end justify-between gap-x-12 gap-y-4">
+            <h2 class="section-title">{home[locale].steps.heading}</h2>
+            <p class="max-w-[44ch] text-base text-band-muted">
+                {home[locale].steps.lead}
+            </p>
+        </div>
+        <div class="mt-12">
+            <Steps items={home[locale].steps.items} variant="band" />
+        </div>
+    </Section>
+
+    <Section tone="paper" rule>
+        <div class="grid gap-8 lg:grid-cols-[5fr_7fr] lg:gap-18">
+            <SectionHeader heading={copy.guarantee.heading} />
+            <div class="prose-body max-w-none">
+                {copy.guarantee.body.map((paragraph) => <p>{paragraph}</p>)}
+            </div>
+        </div>
+    </Section>
+
+    <QuoteBand
+        locale={locale}
+        page={path}
+        heading={home[locale].callBand.heading}
+    />
+</Layout>
