@@ -1,0 +1,209 @@
+@import 'tailwindcss';
+
+@theme {
+    --color-*: initial;
+    --color-graphite-950: oklch(15% 0.006 260);
+    --color-band: oklch(20% 0.006 260);
+    --color-band-rule: oklch(40% 0.006 260);
+    --color-band-muted: oklch(72% 0.006 260);
+    --color-band-lead: oklch(84% 0.004 260);
+    --color-band-ink: oklch(98% 0.002 260);
+    --color-ink: oklch(21% 0.006 260);
+    --color-ink-2: oklch(38% 0.006 260);
+    --color-muted: oklch(46% 0.006 260);
+    --color-paper: oklch(99.5% 0 0);
+    --color-concrete: oklch(97.5% 0.002 260);
+    --color-paper-2: oklch(94% 0.003 260);
+    --color-rule: oklch(87% 0.004 260);
+    --color-rule-2: oklch(91% 0.003 260);
+    --color-accent: oklch(60% 0.1 245);
+    --color-accent-deep: oklch(50% 0.1 245);
+    --color-accent-hover: oklch(44% 0.1 245);
+    --color-accent-ink: oklch(99% 0 0);
+    --color-field: oklch(80% 0.005 260);
+    --color-white: oklch(100% 0 0);
+
+    --font-sans: var(--font-fira-sans);
+    --font-body: var(--font-fira-sans);
+    --font-display: var(--font-fira-sans-extra-condensed);
+
+    --text-display-xl: clamp(3.5rem, 6.2vw, 5.75rem);
+    --text-display-xl--line-height: 0.95;
+    --text-display-xl--letter-spacing: -0.005em;
+    --text-display: 3rem;
+    --text-display--line-height: 1;
+    --text-display-sm: 2.25rem;
+    --text-display-sm--line-height: 1;
+    --text-heading: 1.75rem;
+    --text-heading--line-height: 1.05;
+    --text-heading-sm: 1.5rem;
+    --text-heading-sm--line-height: 1.1;
+    --text-number: 3.5rem;
+    --text-number--line-height: 1;
+    --text-number--letter-spacing: -0.01em;
+    --text-phone: 1.5rem;
+    --text-phone--line-height: 1;
+    --text-phone--letter-spacing: 0.01em;
+    --text-lead: 1.125rem;
+    --text-lead--line-height: 1.5;
+    --text-label: 0.8125rem;
+    --text-label--line-height: 1.4;
+    --text-label--letter-spacing: 0.14em;
+
+    --container-page: 77.5rem;
+    --container-prose: 65ch;
+    --spacing-gutter: clamp(1rem, 4vw, 2.5rem);
+
+    --radius-*: initial;
+    --radius-none: 0;
+    --radius-sm: 2px;
+}
+
+@utility texture-stripes {
+    background-image:
+        repeating-linear-gradient(
+            90deg,
+            oklch(100% 0 0 / 0.06) 0 1px,
+            transparent 1px 88px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0 87px,
+            oklch(0% 0 0 / 0.35) 87px 88px
+        ),
+        linear-gradient(180deg, oklch(23% 0.006 260), oklch(17% 0.006 260));
+}
+
+@utility texture-grid {
+    background-image:
+        linear-gradient(oklch(100% 0 0 / 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, oklch(100% 0 0 / 0.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+}
+
+@utility texture-hatch {
+    background-image: repeating-linear-gradient(
+        -45deg,
+        oklch(0% 0 0 / 0.03) 0 1px,
+        transparent 1px 12px
+    );
+}
+
+@layer base {
+    html {
+        color-scheme: light;
+    }
+
+    body {
+        background-color: var(--color-concrete);
+        color: var(--color-ink);
+        font-family: var(--font-body);
+        line-height: 1.55;
+        text-wrap: pretty;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    [id] {
+        scroll-margin-top: 5rem;
+    }
+
+    summary {
+        list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+        display: none;
+    }
+}
+
+@layer components {
+    .button {
+        @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-sm px-5 text-sm font-semibold tracking-[0.04em] uppercase transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:translate-y-px;
+    }
+
+    .button-lg {
+        @apply min-h-13 px-6.5 text-[15px];
+    }
+
+    .button-primary {
+        @apply bg-accent-deep text-accent-ink hover:bg-accent-hover;
+    }
+
+    .button-outline {
+        @apply border border-ink text-ink hover:bg-ink hover:text-band-ink;
+    }
+
+    .button-outline-dark {
+        @apply border border-band-rule text-band-ink hover:border-band-ink hover:bg-white/6;
+    }
+
+    .button-phone {
+        @apply font-display text-[22px] font-bold tracking-[0.01em] normal-case;
+    }
+
+    .link-arrow {
+        @apply text-[13px] font-semibold tracking-[0.08em] text-accent-deep uppercase hover:text-accent-hover;
+    }
+
+    .display {
+        @apply font-display font-bold uppercase;
+    }
+
+    .section {
+        @apply mx-auto max-w-page px-gutter py-14 md:py-16 lg:py-24;
+    }
+
+    .section-title {
+        @apply font-display text-display-sm font-bold uppercase lg:text-display;
+    }
+
+    .section-lead {
+        @apply mt-3 max-w-[52ch] text-[17px] text-ink-2 lg:text-lead;
+    }
+}
+
+@layer components {
+    .prose-body {
+        @apply max-w-prose text-[17px] leading-relaxed text-ink-2;
+    }
+
+    .prose-body h2 {
+        @apply mt-12 mb-4 font-display text-[28px] leading-none font-bold text-ink uppercase lg:text-[36px];
+    }
+
+    .prose-body h3 {
+        @apply mt-8 mb-3 font-display text-heading-sm font-bold text-ink uppercase;
+    }
+
+    .prose-body p {
+        @apply mt-4;
+    }
+
+    .prose-body ul {
+        @apply mt-4 list-disc space-y-2 pl-6;
+    }
+
+    .prose-body ol {
+        @apply mt-4 list-decimal space-y-2 pl-6;
+    }
+
+    .prose-body a {
+        @apply text-accent-deep underline decoration-1 underline-offset-4 hover:text-accent-hover;
+    }
+
+    .prose-body strong {
+        @apply font-semibold text-ink;
+    }
+
+    .prose-body table {
+        @apply mt-6 w-full border-collapse text-base;
+    }
+
+    .prose-body th {
+        @apply border-t border-rule py-3 pr-4 text-left text-label font-semibold tracking-[0.06em] text-muted uppercase;
+    }
+
+    .prose-body td {
+        @apply border-t border-rule py-3 pr-4 align-top;
+    }
+}
