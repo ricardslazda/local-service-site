@@ -1,0 +1,27 @@
+[
+    {
+        "id": "client-one",
+        "name": "A. B.",
+        "place": {
+            "lv": "Parauga pilsēta",
+            "ru": "Город-пример"
+        },
+        "work": {
+            "lv": "Pirmais pakalpojums",
+            "ru": "Первая услуга"
+        },
+        "quote": {
+            "lv": "Šeit ir klienta atsauksme viņa paša vārdiem: kas bija jādara, kā noritēja darbs un kāds bija rezultāts. Pietiek ar diviem vai trim teikumiem.",
+            "ru": "Здесь отзыв клиента его собственными словами: что нужно было сделать, как прошла работа и каким получился результат. Достаточно двух-трёх предложений."
+        },
+        "photo": "../assets/placeholders/testimonial.svg",
+        "photoAlt": {
+            "lv": "Parauga attēls klienta atsauksmei",
+            "ru": "Пример изображения для отзыва клиента"
+        },
+        "date": "2025-10-15",
+        "location": "example-town",
+        "service": "service-one",
+        "job": "job-one"
+    }
+]
