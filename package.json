@@ -24,7 +24,7 @@
     "dependencies": {
         "@jdevalk/astro-seo-graph": "^2.2.0",
         "@jdevalk/seo-graph-core": "^0.7.0",
-        "astro": "^7.2.10"
+        "astro": "^7.3.2"
     },
     "allowScripts": {
         "esbuild": true
